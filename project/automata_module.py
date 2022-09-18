@@ -5,12 +5,12 @@ from pyformlang.finite_automaton import Symbol
 from pyformlang.regular_expression import Regex
 
 
-# Build minimal dfa from given regex with rules from pyformlang.regular_expression
+# Builds minimal dfa from given regex with rules from pyformlang.regular_expression
 def build_min_dfa_from_regex(regex_string):
     return Regex(regex_string).to_epsilon_nfa().minimize()
 
 
-# Build nfa from given graph whether it's a networkx graph or the path to the dot file
+# Builds nfa from given graph whether it's a networkx graph or the path to the dot file
 def build_nfa_from_graph(graph, start_states: set = None, final_states: set = None):
     multi_di_graph = (
         graph

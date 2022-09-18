@@ -57,6 +57,9 @@ def test_build_nfa_from_graph_from_dot_file(tmp_path):
         and nfa2.accepts(["man"])
         and nfa3.accepts(["woman"])
         and not nfa3.accepts(["someone"])
-        and nfa1.get_number_transitions() == 5 == nfa2.get_number_transitions()
+        and nfa1.get_number_transitions()
+        == 5
+        == nfa2.get_number_transitions()
+        == nfa3.get_number_transitions()
         and len(nfa1.states) == 4 == len(nfa2.states) == len(nfa3.states)
     )

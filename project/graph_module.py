@@ -4,13 +4,13 @@ from cfpq_data import labeled_two_cycles_graph
 from networkx.drawing.nx_pydot import to_pydot
 
 
-# Take graph from cfpq_data.dataset.DATASET and return MultiDiGraph from networkx
+# Takes graph from cfpq_data.dataset.DATASET and returns MultiDiGraph from networkx
 def get_graph(graph_name):
     graph_path = download(graph_name)
     return graph_from_csv(graph_path)
 
 
-# Return number of vertecies and edges also return all labels
+# Returns number of vertecies and edges also returns all labels
 def get_graph_count_vertex_edges_labels(graph_name):
     graph = get_graph(graph_name)
     return (
@@ -20,7 +20,7 @@ def get_graph_count_vertex_edges_labels(graph_name):
     )
 
 
-# Build graph and save in dot format file
+# Builds graph and saves in dot format file
 def build_two_cycles_graph_dot_format(
     num_vertexes_first_cycle: int,
     num_vertexes_second_cycle: int,
