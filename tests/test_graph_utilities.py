@@ -1,5 +1,5 @@
-from project.graph_module import build_two_cycles_graph_dot_format
-from project.graph_module import get_graph_count_vertex_edges_labels
+from project.graph_utilities import build_two_cycles_graph_dot_format
+from project.graph_utilities import get_graph_count_vertex_edges_labels
 
 
 def test_get_graph_count_vertex_edges_labels():
