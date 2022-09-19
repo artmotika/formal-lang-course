@@ -6,7 +6,6 @@ from pyformlang.finite_automaton import State
 from pyformlang.finite_automaton.deterministic_finite_automaton import (
     DeterministicFiniteAutomaton,
 )
-
 from project.automata_module import build_min_dfa_from_regex
 from project.automata_module import build_nfa_from_graph
 from project.graph_module import build_two_cycles_graph_dot_format
@@ -24,7 +23,7 @@ def test_build_min_dfa_from_regex_concatenation():
     assert is_isomorphic(
         G1=expected_dfa.to_networkx(),
         G2=actual_dfa.to_networkx(),
-        node_match=categorical_node_match(["is_start", "is_final"], [None, None, None]),
+        node_match=categorical_node_match(["is_start", "is_final"], [None, None]),
         edge_match=categorical_multiedge_match("label", None),
     )
 
@@ -44,7 +43,7 @@ def test_build_min_dfa_from_regex_union():
     assert is_isomorphic(
         G1=expected_dfa.to_networkx(),
         G2=actual_dfa.to_networkx(),
-        node_match=categorical_node_match(["is_start", "is_final"], [None, None, None]),
+        node_match=categorical_node_match(["is_start", "is_final"], [None, None]),
         edge_match=categorical_multiedge_match("label", None),
     )
 
@@ -58,7 +57,7 @@ def test_build_min_dfa_from_regex_kleene():
     assert is_isomorphic(
         G1=expected_dfa.to_networkx(),
         G2=actual_dfa.to_networkx(),
-        node_match=categorical_node_match(["is_start", "is_final"], [None, None, None]),
+        node_match=categorical_node_match(["is_start", "is_final"], [None, None]),
         edge_match=categorical_multiedge_match("label", None),
     )
 
@@ -111,11 +110,11 @@ def test_build_nfa_from_graph_from_dot_file(tmp_path):
     assert is_isomorphic(
         G1=expected_nfa1.to_networkx(),
         G2=actual_nfa1.to_networkx(),
-        node_match=categorical_node_match(["is_start", "is_final"], [None, None, None]),
+        node_match=categorical_node_match(["is_start", "is_final"], [None, None]),
         edge_match=categorical_multiedge_match("label", None),
     ) and is_isomorphic(
         G1=expected_nfa2.to_networkx(),
         G2=actual_nfa2.to_networkx(),
-        node_match=categorical_node_match(["is_start", "is_final"], [None, None, None]),
+        node_match=categorical_node_match(["is_start", "is_final"], [None, None]),
         edge_match=categorical_multiedge_match("label", None),
     )
