@@ -1,5 +1,5 @@
-from project.graph_module import get_graph_count_vertex_edges_labels
-from project.graph_module import build_two_cycles_graph_dot_format
+from project.graph_utilities import build_two_cycles_graph_dot_format
+from project.graph_utilities import get_graph_count_vertex_edges_labels
 
 
 def test_get_graph_count_vertex_edges_labels():
@@ -13,16 +13,5 @@ def test_build_two_cycles_graph_dot_format(tmp_path):
     build_two_cycles_graph_dot_format(1, 2, ("man", "woman"), actual_file_path)
     assert (
         open(actual_file_path, "r").read()
-        == """digraph  {
-1;
-0;
-2;
-3;
-1 -> 0  [key=0, label=man];
-0 -> 1  [key=0, label=man];
-0 -> 2  [key=0, label=woman];
-2 -> 3  [key=0, label=woman];
-3 -> 0  [key=0, label=woman];
-}
-"""
+        == """digraph  {1;0;2;3;1 -> 0  [key=0, label=man];0 -> 1  [key=0, label=man];0 -> 2  [key=0, label=woman];2 -> 3  [key=0, label=woman];3 -> 0  [key=0, label=woman];}"""
     )
