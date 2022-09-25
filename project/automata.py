@@ -35,3 +35,6 @@ def build_nfa_from_graph(graph, start_states: set = None, final_states: set = No
         ]
     )
     return enfa
+
+
+# def cross_two_automata(aut1, aut2):
