@@ -12,10 +12,12 @@ from project.graph_utilities import get_graph
 def test_build_nfa_from_graph_from_dataset():
     networkx_graph = get_graph("wc")
     nfa = build_nfa_from_graph(networkx_graph, {1}, {47})
-    assert (
-        nfa.accepts(["A"])
-        and nfa.get_number_transitions() == 269
-        and len(nfa.states) == 332
+    assert all(
+        (
+            nfa.accepts(["A"]),
+            nfa.get_number_transitions() == 269,
+            len(nfa.states) == 332,
+        )
     )
 
 

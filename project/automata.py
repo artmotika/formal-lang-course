@@ -4,7 +4,7 @@ from pyformlang.finite_automaton import EpsilonNFA
 from pyformlang.finite_automaton import State
 from pyformlang.finite_automaton import Symbol
 from pyformlang.regular_expression import Regex
-from project.BoolDecomposedFA import BoolDecomposedFA
+from project.bool_decomposed_fa import BoolDecomposedFA
 
 # Builds minimal dfa from given regex with rules from pyformlang.regular_expression
 def build_min_dfa_from_regex(regex_string):

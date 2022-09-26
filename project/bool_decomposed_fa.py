@@ -34,6 +34,7 @@ class BoolDecomposedFA:
         for idx, state in enumerate(fa.states.copy()):
             state_to_idx[state] = idx
             idx_to_state[idx] = state
+
         return cls(
             state_to_idx=state_to_idx,
             idx_to_state=idx_to_state,
@@ -47,13 +48,19 @@ class BoolDecomposedFA:
         fa: EpsilonNFA, state_to_idx: dict[State, int]
     ) -> dict[Symbol, csr_matrix]:
         n = len(fa.states)
-        data = {symbol: list[bool] for symbol in fa.symbols}
-        row = {symbol: list[int] for symbol in fa.symbols}
-        col = {symbol: list[int] for symbol in fa.symbols}
+        data = {symbol: [] for symbol in fa.symbols}
+        row = {symbol: [] for symbol in fa.symbols}
+        col = {symbol: [] for symbol in fa.symbols}
         for (source, symbol, target) in fa:
-            data[symbol] = data.get(symbol).append(1)
-            row[symbol] = row.get(symbol).append(state_to_idx[source])
-            col[symbol] = col.get(symbol).append(state_to_idx[target])
+            data_by_symbol = data.get(symbol)
+            row_by_symbol = row.get(symbol)
+            col_by_symbol = col.get(symbol)
+            data_by_symbol.append(1)
+            row_by_symbol.append(state_to_idx[source])
+            col_by_symbol.append(state_to_idx[target])
+            data[symbol] = data_by_symbol
+            row[symbol] = row_by_symbol
+            col[symbol] = col_by_symbol
         return {
             symbol: csr_matrix(
                 (
@@ -68,35 +75,35 @@ class BoolDecomposedFA:
 
     def get_intersection(self, other: "BoolDecomposedFA") -> "BoolDecomposedFA":
         all_state_to_idx, all_idx_to_state = {}, {}
-        all_start_states, all_final_states = set(), set()
+        inter_start_states, inter_final_states = set(), set()
         other_keys = other.state_to_idx.keys()
         for state1 in self.state_to_idx.keys():
             for state2 in other_keys:
-                state = State(str(state1.value) + str(state2.value))
+                state = State(str(state1.value) + ":" + str(state2.value))
                 idx = self.state_to_idx.get(state1) * len(
                     other_keys
                 ) + other.state_to_idx.get(state2)
                 all_state_to_idx[state] = idx
                 all_idx_to_state[idx] = state
                 if state1 in self.start_states and state2 in other.start_states:
-                    all_start_states.add(State(str(state1.value) + str(state2.value)))
+                    inter_start_states.add(state)
                 if state1 in self.final_states and state2 in other.final_states:
-                    all_final_states.add(State(str(state1.value) + str(state2.value)))
+                    inter_final_states.add(state)
 
         inter_symbols = self.adjacency_matrices.keys() & other.adjacency_matrices.keys()
-        all_adjacency_matrices = {
+        inter_adjacency_matrices = {
             symbol: kron(
-                other.adjacency_matrices.get(symbol),
                 self.adjacency_matrices.get(symbol),
+                other.adjacency_matrices.get(symbol),
             )
             for symbol in inter_symbols
         }
         return BoolDecomposedFA(
             state_to_idx=all_state_to_idx,
             idx_to_state=all_idx_to_state,
-            start_states=all_start_states,
-            final_states=all_final_states,
-            adjacency_matrices=all_adjacency_matrices,
+            start_states=inter_start_states,
+            final_states=inter_final_states,
+            adjacency_matrices=inter_adjacency_matrices,
         )
 
     def to_fa(self) -> EpsilonNFA:
@@ -107,15 +114,16 @@ class BoolDecomposedFA:
         )
 
         for symbol in self.adjacency_matrices.keys():
-            nonzero_idx = self.adjacency_matrices.get(symbol).nonzero()
             enfa.add_transitions(
                 [
                     (
-                        self.idx_to_state.get(nonzero_idx[0][i]),
+                        self.idx_to_state.get(source),
                         symbol,
-                        self.idx_to_state.get(nonzero_idx[1][i]),
+                        self.idx_to_state.get(target),
                     )
-                    for i in range(len(nonzero_idx[0]))
+                    for source, target in zip(
+                        *self.adjacency_matrices.get(symbol).nonzero()
+                    )
                 ]
             )
         return enfa
