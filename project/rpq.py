@@ -12,14 +12,13 @@ def rpq(
     bool_decomposed_fa = BoolDecomposedFA.from_fa(aut1).get_intersection(
         BoolDecomposedFA.from_fa(aut2)
     )
-    return {
-        (
-            bool_decomposed_fa.idx_to_state.get(source),
-            bool_decomposed_fa.idx_to_state.get(target),
-        )
-        for source, target in zip(*bool_decomposed_fa.transitive_closure().nonzero())
-        if bool_decomposed_fa.idx_to_state.get(source)
-        in bool_decomposed_fa.start_states
-        and bool_decomposed_fa.idx_to_state.get(target)
-        in bool_decomposed_fa.final_states
-    }
+    result = set()
+    for source, target in zip(*bool_decomposed_fa.transitive_closure().nonzero()):
+        state_source = bool_decomposed_fa.idx_to_state.get(source)
+        state_target = bool_decomposed_fa.idx_to_state.get(target)
+        if (
+            state_source in bool_decomposed_fa.start_states
+            and state_target in bool_decomposed_fa.final_states
+        ):
+            result.add((state_source, state_target))
+    return result
