@@ -1,6 +1,6 @@
-from automata import build_nfa_from_graph
-from automata import build_min_dfa_from_regex
-from bool_decomposed_fa import BoolDecomposedFA
+from project.automata import build_nfa_from_graph
+from project.automata import build_min_dfa_from_regex
+from project.bool_decomposed_fa import BoolDecomposedFA
 from typing import Any
 
 
@@ -14,12 +14,12 @@ def rpq(
     )
     return {
         (
-            bool_decomposed_fa.idx_to_state(source),
-            bool_decomposed_fa.idx_to_state(target),
+            bool_decomposed_fa.idx_to_state.get(source),
+            bool_decomposed_fa.idx_to_state.get(target),
         )
-        for source, target in zip(
-            *bool_decomposed_fa.adjacency_matrices.transitive_closure().nonzero()
-        )
-        if source in bool_decomposed_fa.start_states
-        and target in bool_decomposed_fa.final_states
+        for source, target in zip(*bool_decomposed_fa.transitive_closure().nonzero())
+        if bool_decomposed_fa.idx_to_state.get(source)
+        in bool_decomposed_fa.start_states
+        and bool_decomposed_fa.idx_to_state.get(target)
+        in bool_decomposed_fa.final_states
     }
