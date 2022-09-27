@@ -3,7 +3,6 @@ from cfpq_data import graph_from_csv
 from cfpq_data import labeled_two_cycles_graph
 from networkx.drawing.nx_pydot import to_pydot
 
-
 # Takes graph from cfpq_data.dataset.DATASET and returns MultiDiGraph from networkx
 def get_graph(graph_name):
     graph_path = download(graph_name)
