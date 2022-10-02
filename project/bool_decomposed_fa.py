@@ -76,12 +76,12 @@ class BoolDecomposedFA:
     def get_intersection(self, other: "BoolDecomposedFA") -> "BoolDecomposedFA":
         all_state_to_idx, all_idx_to_state = {}, {}
         inter_start_states, inter_final_states = set(), set()
-        other_keys = other.state_to_idx.keys()
+        other_states = other.state_to_idx.keys()
         for state1 in self.state_to_idx.keys():
-            for state2 in other_keys:
+            for state2 in other_states:
                 state = State(str(state1.value) + ":" + str(state2.value))
                 idx = self.state_to_idx.get(state1) * len(
-                    other_keys
+                    other_states
                 ) + other.state_to_idx.get(state2)
                 all_state_to_idx[state] = idx
                 all_idx_to_state[idx] = state
@@ -141,3 +141,69 @@ class BoolDecomposedFA:
             previous_not_zero = cur_not_zero
             cur_not_zero = result.count_nonzero()
         return result
+
+    def bfs(self, start_states_bfs: set[State] = None, is_whole_set: bool = True):
+
+        if start_states_bfs is None:
+            start_states_bfs = self.start_states.copy()
+
+        data, row, col = [], [], []
+        self_states = self.state_to_idx.keys()
+        n = len(self_states)
+
+        adjacency_matrix = sum(
+            self.adjacency_matrices.values(),
+            start=csr_matrix((n, n)),
+        )
+
+        for state in self.state_to_idx.keys():
+            if state in start_states_bfs:
+                data.append(1)
+                row.append(0)
+                col.append(self.state_to_idx.get(state))
+
+        if is_whole_set:
+            vertecies_vector = csr_matrix(
+                (
+                    array(data),
+                    (array(row), array(col)),
+                ),
+                shape=(1, n),
+                dtype=int,
+            )
+            visited_vertex_idx = {}
+            visited_vertex_idx.update(col)
+            previous_num_visited = 0
+            cur_num_visited = len(visited_vertex_idx)
+            while cur_num_visited != previous_num_visited:
+                previous_num_visited = len(visited_vertex_idx)
+                next_vertecies = vertecies_vector @ adjacency_matrix
+                visited_vertex_idx.update(next_vertecies.nonzero()[1].tolist())
+                cur_num_visited = len(visited_vertex_idx)
+            return {self.idx_to_state.get(idx) for idx in visited_vertex_idx}
+        else:
+            result = {state: {} for state in start_states_bfs}
+            for state in start_states_bfs:
+                idx_state = self.state_to_idx.get(state)
+                if idx_state is None:
+                    continue
+                vertex_vector = csr_matrix(
+                    (
+                        array([1]),
+                        (array([0]), array([idx_state])),
+                    ),
+                    shape=(1, len(self_states)),
+                    dtype=int,
+                )
+                visited_vertex_idx = {idx_state}
+                previous_num_visited = 0
+                cur_num_visited = 1
+                while cur_num_visited != previous_num_visited:
+                    previous_num_visited = len(visited_vertex_idx)
+                    next_vertecies = vertex_vector @ adjacency_matrix
+                    visited_vertex_idx.update(next_vertecies.nonzero()[1].tolist())
+                    cur_num_visited = len(visited_vertex_idx)
+                result[state] = {
+                    self.idx_to_state.get(idx) for idx in visited_vertex_idx
+                }
+            return result
