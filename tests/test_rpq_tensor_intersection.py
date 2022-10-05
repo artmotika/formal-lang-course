@@ -9,7 +9,7 @@ def get_graph(edges):
     return graph
 
 
-def test_rpq():
+def test_rpq1():
     assert rpq(
         "a*.(d+b).a.b",
         get_graph(

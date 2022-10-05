@@ -12,6 +12,7 @@ class BoolDecomposedFA:
     start_states: set[State]
     final_states: set[State]
     adjacency_matrices: dict[Symbol, csr_matrix]
+    multiple_source_dict: dict[int, State]
 
     def __init__(
         self,
@@ -48,9 +49,11 @@ class BoolDecomposedFA:
         fa: EpsilonNFA, state_to_idx: dict[State, int]
     ) -> dict[Symbol, csr_matrix]:
         n = len(fa.states)
-        data = {symbol: [] for symbol in fa.symbols}
-        row = {symbol: [] for symbol in fa.symbols}
-        col = {symbol: [] for symbol in fa.symbols}
+        symbols = fa.symbols.copy()
+        symbols.add(Symbol("epsilon"))
+        data = {symbol: [] for symbol in symbols}
+        row = {symbol: [] for symbol in symbols}
+        col = {symbol: [] for symbol in symbols}
         for (source, symbol, target) in fa:
             data_by_symbol = data.get(symbol)
             row_by_symbol = row.get(symbol)
@@ -61,6 +64,18 @@ class BoolDecomposedFA:
             data[symbol] = data_by_symbol
             row[symbol] = row_by_symbol
             col[symbol] = col_by_symbol
+        for state in fa.start_states:
+            if state in fa.final_states:
+                symbol = Symbol("epsilon")
+                data_by_symbol = data.get(symbol)
+                row_by_symbol = row.get(symbol)
+                col_by_symbol = col.get(symbol)
+                data_by_symbol.append(1)
+                row_by_symbol.append(state_to_idx[state])
+                col_by_symbol.append(state_to_idx[state])
+                data[symbol] = data_by_symbol
+                row[symbol] = row_by_symbol
+                col[symbol] = col_by_symbol
         return {
             symbol: csr_matrix(
                 (
@@ -70,7 +85,7 @@ class BoolDecomposedFA:
                 shape=(n, n),
                 dtype=int,
             )
-            for symbol in fa.symbols
+            for symbol in symbols
         }
 
     def get_intersection(self, other: "BoolDecomposedFA") -> "BoolDecomposedFA":
@@ -90,7 +105,10 @@ class BoolDecomposedFA:
                 if state1 in self.final_states and state2 in other.final_states:
                     inter_final_states.add(state)
 
-        inter_symbols = self.adjacency_matrices.keys() & other.adjacency_matrices.keys()
+        inter_symbols = (
+            self.adjacency_matrices.keys() & other.adjacency_matrices.keys()
+            | set(iter([Symbol("epsilon")]))
+        )
         inter_adjacency_matrices = {
             symbol: kron(
                 self.adjacency_matrices.get(symbol),
@@ -142,68 +160,178 @@ class BoolDecomposedFA:
             cur_not_zero = result.count_nonzero()
         return result
 
-    def bfs(self, start_states_bfs: set[State] = None, is_whole_set: bool = True):
-
-        if start_states_bfs is None:
-            start_states_bfs = self.start_states.copy()
-
-        data, row, col = [], [], []
+    def get_bfs_intersection(
+        self, other: "BoolDecomposedFA", is_multiple_source: bool = False
+    ):
         self_states = self.state_to_idx.keys()
-        n = len(self_states)
+        other_states = other.state_to_idx.keys()
+        n_self = len(self_states)
+        n_other = len(other_states)
+        n_start_states_self = len(self.start_states)
 
-        adjacency_matrix = sum(
-            self.adjacency_matrices.values(),
-            start=csr_matrix((n, n)),
-        )
-
-        for state in self.state_to_idx.keys():
-            if state in start_states_bfs:
-                data.append(1)
-                row.append(0)
-                col.append(self.state_to_idx.get(state))
-
-        if is_whole_set:
-            vertecies_vector = csr_matrix(
+        def get_ms_start_front() -> csr_matrix:
+            data, row, col = [], [], []
+            i = 0
+            self.multiple_source_dict = {}
+            for state_s in self.start_states:
+                for state_o in other.start_states:
+                    self.multiple_source_dict[i] = state_s
+                    idx_other = other.state_to_idx.get(state_o)
+                    idx_other_ms = other.state_to_idx.get(state_o) + n_other * i
+                    i += 1
+                    data.append(1)
+                    row.append(idx_other_ms)
+                    col.append(idx_other)
+                    idx_self = self.state_to_idx.get(state_s)
+                    data.append(1)
+                    row.append(idx_other_ms)
+                    col.append(idx_self + n_other)
+            return csr_matrix(
                 (
                     array(data),
                     (array(row), array(col)),
                 ),
-                shape=(1, n),
+                shape=(n_other * i, n_other + n_self),
                 dtype=int,
             )
-            visited_vertex_idx = {}
-            visited_vertex_idx.update(col)
-            previous_num_visited = 0
-            cur_num_visited = len(visited_vertex_idx)
-            while cur_num_visited != previous_num_visited:
-                previous_num_visited = len(visited_vertex_idx)
-                next_vertecies = vertecies_vector @ adjacency_matrix
-                visited_vertex_idx.update(next_vertecies.nonzero()[1].tolist())
-                cur_num_visited = len(visited_vertex_idx)
-            return {self.idx_to_state.get(idx) for idx in visited_vertex_idx}
-        else:
-            result = {state: {} for state in start_states_bfs}
-            for state in start_states_bfs:
-                idx_state = self.state_to_idx.get(state)
-                if idx_state is None:
-                    continue
-                vertex_vector = csr_matrix(
-                    (
-                        array([1]),
-                        (array([0]), array([idx_state])),
-                    ),
-                    shape=(1, len(self_states)),
-                    dtype=int,
+
+        def get_start_front() -> csr_matrix:
+            data, row, col = [], [], []
+            for state_o in other.start_states:
+                idx_other = other.state_to_idx.get(state_o)
+                data.append(1)
+                row.append(idx_other)
+                col.append(idx_other)
+                for state_s in self.start_states:
+                    idx_self = self.state_to_idx.get(state_s)
+                    data.append(1)
+                    row.append(idx_other)
+                    col.append(idx_self + n_other)
+            return csr_matrix(
+                (
+                    array(data),
+                    (array(row), array(col)),
+                ),
+                shape=(n_other, n_other + n_self),
+                dtype=int,
+            )
+
+        def get_direct_sum(matrix1: csr_matrix, matrix2: csr_matrix) -> csr_matrix:
+            data, row, col = [], [], []
+            for i, j in zip(*matrix1.nonzero()):
+                data.append(1)
+                row.append(i)
+                col.append(j)
+            shape1 = matrix1.shape[0]
+            shape2 = matrix2.shape[0]
+            shape = shape1 + shape2
+            for i, j in zip(*matrix2.nonzero()):
+                data.append(1)
+                row.append(i + shape1)
+                col.append(j + shape1)
+            return csr_matrix(
+                (
+                    array(data),
+                    (array(row), array(col)),
+                ),
+                shape=(shape, shape),
+                dtype=int,
+            )
+
+        def get_submatrix(
+            matrix: csr_matrix, range1: tuple, range2: tuple
+        ) -> csr_matrix:
+            data, row, col = [], [], []
+            shape1 = range1[1] - range1[0]
+            shape2 = range2[1] - range2[0]
+            for i, j in zip(*matrix.nonzero()):
+                if range1[0] <= i < range1[1] and range2[0] <= j < range2[1]:
+                    data.append(1)
+                    row.append(i - range1[0])
+                    col.append(j - range2[0])
+            return csr_matrix(
+                (
+                    array(data),
+                    (array(row), array(col)),
+                ),
+                shape=(shape1, shape2),
+                dtype=int,
+            )
+
+        def transform_rows(
+            matrix: csr_matrix, is_ms: bool = is_multiple_source
+        ) -> csr_matrix:
+            count_f = 2
+            if is_ms:
+                count_f = n_start_states_self + 1
+            data, row, col = [], [], []
+            for c in range(1, count_f):
+                for i, j in zip(*matrix.nonzero()):
+                    if n_other * (c - 1) <= i < n_other * c and 0 <= j < n_other:
+                        for k, l in zip(*matrix.nonzero()):
+                            if k == i and n_other <= l < n_self + n_other:
+                                data.append(1)
+                                row.append(n_other * (c - 1) + j)
+                                col.append(j)
+                                data.append(1)
+                                row.append(n_other * (c - 1) + j)
+                                col.append(l)
+            return csr_matrix(
+                (
+                    array(data),
+                    (array(row), array(col)),
+                ),
+                shape=matrix.shape,
+                dtype=int,
+            )
+
+        if is_multiple_source:
+            front = get_ms_start_front()
+            cur_visited = front.copy()
+            previous_visited = cur_visited.copy()
+            while True:
+                new_front = csr_matrix(
+                    (n_other * n_start_states_self, n_other + n_self), dtype=int
                 )
-                visited_vertex_idx = {idx_state}
-                previous_num_visited = 0
-                cur_num_visited = 1
-                while cur_num_visited != previous_num_visited:
-                    previous_num_visited = len(visited_vertex_idx)
-                    next_vertecies = vertex_vector @ adjacency_matrix
-                    visited_vertex_idx.update(next_vertecies.nonzero()[1].tolist())
-                    cur_num_visited = len(visited_vertex_idx)
-                result[state] = {
-                    self.idx_to_state.get(idx) for idx in visited_vertex_idx
-                }
-            return result
+                inter_symbols = set(other.adjacency_matrices.keys()).intersection(
+                    self.adjacency_matrices.keys()
+                )
+                for symbol in inter_symbols:
+                    next_front = front @ get_direct_sum(
+                        other.adjacency_matrices.get(symbol),
+                        self.adjacency_matrices.get(symbol),
+                    )
+                    transformed_next_front = transform_rows(next_front)
+                    new_front = new_front + transformed_next_front
+                front = new_front.copy()
+                cur_visited = cur_visited + front
+                if cur_visited.count_nonzero() <= previous_visited.count_nonzero():
+                    break
+                previous_visited = cur_visited.copy()
+            return get_submatrix(
+                cur_visited,
+                (0, n_other * n_start_states_self),
+                (n_other, n_self + n_other),
+            )
+        else:
+            front = get_start_front()
+            cur_visited = front.copy()
+            previous_visited = cur_visited.copy()
+            while True:
+                new_front = csr_matrix((n_other, n_other + n_self), dtype=int)
+                inter_symbols = set(other.adjacency_matrices.keys()).intersection(
+                    self.adjacency_matrices.keys()
+                )
+                for symbol in inter_symbols:
+                    next_front = front @ get_direct_sum(
+                        other.adjacency_matrices.get(symbol),
+                        self.adjacency_matrices.get(symbol),
+                    )
+                    transformed_next_front = transform_rows(next_front)
+                    new_front = new_front + transformed_next_front
+                front = new_front.copy()
+                cur_visited = cur_visited + front
+                if cur_visited.count_nonzero() <= previous_visited.count_nonzero():
+                    break
+                previous_visited = cur_visited.copy()
+            return get_submatrix(cur_visited, (0, n_other), (n_other, n_self + n_other))

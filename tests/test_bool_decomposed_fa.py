@@ -33,7 +33,7 @@ def test_from_fa1():
             len(bool_decomposed_fa.idx_to_state.keys()) == len(states),
             bool_decomposed_fa.start_states == start_states,
             bool_decomposed_fa.final_states == final_states,
-            len(bool_decomposed_fa.adjacency_matrices.keys()) == 1,
+            len(bool_decomposed_fa.adjacency_matrices.keys()) == 2,
             bool_decomposed_fa.adjacency_matrices.get(State("a")).toarray().tolist()
             == [[0, 1], [0, 0]],
         )
@@ -62,7 +62,7 @@ def test_from_fa2():
             len(bool_decomposed_fa.idx_to_state.keys()) == len(states),
             bool_decomposed_fa.start_states == start_states,
             bool_decomposed_fa.final_states == final_states,
-            len(bool_decomposed_fa.adjacency_matrices.keys()) == 3,
+            len(bool_decomposed_fa.adjacency_matrices.keys()) == 4,
             bool_decomposed_fa.adjacency_matrices.get(symbol1).toarray().tolist()
             == expected_adjacency_matrices.get(symbol1),
             bool_decomposed_fa.adjacency_matrices.get(symbol2).toarray().tolist()
@@ -108,7 +108,7 @@ def test_get_intersection():
             inter_bool_decomposed_fa.start_states == {"1:3"},
             inter_bool_decomposed_fa.final_states
             == {"1:3", "1:4", "1:6", "2:3", "2:4", "2:6"},
-            len(inter_bool_decomposed_fa.adjacency_matrices.keys()) == 1,
+            len(inter_bool_decomposed_fa.adjacency_matrices.keys()) == 2,
             inter_bool_decomposed_fa.adjacency_matrices.get(symbol1) is None,
             inter_bool_decomposed_fa.adjacency_matrices.get(symbol2) is None,
             inter_bool_decomposed_fa.adjacency_matrices.get(symbol3).toarray().tolist()
