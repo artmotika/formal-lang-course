@@ -167,7 +167,7 @@ class BoolDecomposedFA:
 
     def get_bfs_intersection(
         self, other: "BoolDecomposedFA", is_multiple_source: bool = False
-    ):
+    ) -> csr_matrix:
         self_states = self.state_to_idx.keys()
         other_states = other.state_to_idx.keys()
         n_self = len(self_states)
