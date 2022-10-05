@@ -29,7 +29,8 @@ def rpq(
     aut2 = build_min_dfa_from_regex(regex)
     result = set()
     if isinstance(method_rpq.method, TensorIntersection):
-        bool_decomposed_fa = BoolDecomposedFA.from_fa(aut1).get_intersection(
+        bool_decomposed_aut1 = BoolDecomposedFA.from_fa(aut1)
+        bool_decomposed_fa = bool_decomposed_aut1.get_intersection(
             BoolDecomposedFA.from_fa(aut2)
         )
         for source, target in zip(*bool_decomposed_fa.transitive_closure().nonzero()):
@@ -39,7 +40,16 @@ def rpq(
                 state_source in bool_decomposed_fa.start_states
                 and state_target in bool_decomposed_fa.final_states
             ):
-                result.add((state_source.value, state_target.value))
+                result.add(
+                    (
+                        bool_decomposed_aut1.tensor_intersection_dict.get(
+                            state_source
+                        ).value,
+                        bool_decomposed_aut1.tensor_intersection_dict.get(
+                            state_target
+                        ).value,
+                    )
+                )
         return result
     elif isinstance(method_rpq.method, BfsIntersection):
         bool_decomposed_aut1 = BoolDecomposedFA.from_fa(aut1)

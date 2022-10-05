@@ -12,6 +12,9 @@ class BoolDecomposedFA:
     start_states: set[State]
     final_states: set[State]
     adjacency_matrices: dict[Symbol, csr_matrix]
+    tensor_intersection_dict: dict[
+        State, State
+    ]  # Сопоставление состоянию из пересечения состояния из графа
     multiple_source_dict: dict[int, State]
 
     def __init__(
@@ -92,9 +95,11 @@ class BoolDecomposedFA:
         all_state_to_idx, all_idx_to_state = {}, {}
         inter_start_states, inter_final_states = set(), set()
         other_states = other.state_to_idx.keys()
+        self.tensor_intersection_dict = {}
         for state1 in self.state_to_idx.keys():
             for state2 in other_states:
                 state = State(str(state1.value) + ":" + str(state2.value))
+                self.tensor_intersection_dict[state] = state1
                 idx = self.state_to_idx.get(state1) * len(
                     other_states
                 ) + other.state_to_idx.get(state2)
