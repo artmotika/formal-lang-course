@@ -39,7 +39,7 @@ def rpq(
                 state_source in bool_decomposed_fa.start_states
                 and state_target in bool_decomposed_fa.final_states
             ):
-                result.add((state_source, state_target))
+                result.add((state_source.value, state_target.value))
         return result
     elif isinstance(method_rpq.method, BfsIntersection):
         bool_decomposed_aut1 = BoolDecomposedFA.from_fa(aut1)
@@ -62,8 +62,8 @@ def rpq(
                         (
                             bool_decomposed_aut1.multiple_source_dict.get(
                                 i // n_states_aut2
-                            ),
-                            aut1_state,
+                            ).value,
+                            aut1_state.value,
                         )
                     )
         else:
@@ -79,7 +79,7 @@ def rpq(
                     aut2_state in bool_decomposed_aut2.final_states
                     and aut1_state in bool_decomposed_aut1.final_states
                 ):
-                    result.add(aut1_state)
+                    result.add(aut1_state.value)
         return result
     else:
         raise ValueError
