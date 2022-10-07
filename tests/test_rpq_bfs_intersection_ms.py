@@ -1,6 +1,6 @@
 from tests.test_rpq_tensor_intersection import get_graph
 from project.rpq import MethodRpq
-from project.rpq import BfsIntersection
+from project.rpq import MethodBfs
 from project.rpq import rpq
 
 
@@ -15,7 +15,7 @@ def test_rpq1():
         ),
         start_states={1},
         final_states={1, 2, 3},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=True)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
     ) == {(1, 3)}
 
 
@@ -44,7 +44,7 @@ def test_rpq2():
         ),
         start_states={1, 2},
         final_states={1, 10, 3},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=True)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
     ) == {(2, 10), (1, 10)}
 
 
@@ -73,7 +73,7 @@ def test_rpq3():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=True)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
     ) == {(3, 10), (1, 7), (2, 7), (2, 10), (6, 10), (1, 10), (4, 10)}
 
 
@@ -102,7 +102,7 @@ def test_rpq4():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=True)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
     ) == {(1, 8), (2, 8), (2, 9), (2, 10)}
 
 
@@ -131,7 +131,7 @@ def test_rpq5():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=True)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
     ) == {
         (3, 9),
         (3, 7),
@@ -197,5 +197,5 @@ def test_rpq6():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=True)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
     ) == {(5, 5), (6, 5), (1, 5), (9, 5), (7, 5), (2, 5), (8, 5), (3, 5)}
