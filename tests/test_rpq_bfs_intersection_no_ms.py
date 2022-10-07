@@ -1,6 +1,6 @@
 from tests.test_rpq_tensor_intersection import get_graph
 from project.rpq import MethodRpq
-from project.rpq import BfsIntersection
+from project.rpq import MethodBfs
 from project.rpq import rpq
 
 
@@ -15,7 +15,7 @@ def test_rpq1():
         ),
         start_states={1},
         final_states={1, 2, 3},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=False)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=False)),
     ) == {3}
 
 
@@ -44,7 +44,7 @@ def test_rpq2():
         ),
         start_states={1, 2},
         final_states={1, 10, 3},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=False)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=False)),
     ) == {10}
 
 
@@ -73,7 +73,7 @@ def test_rpq3():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=False)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=False)),
     ) == {10, 7}
 
 
@@ -102,7 +102,7 @@ def test_rpq4():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=False)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=False)),
     ) == {8, 9, 10}
 
 
@@ -131,7 +131,7 @@ def test_rpq5():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=False)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=False)),
     ) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
 
 
@@ -160,5 +160,5 @@ def test_rpq6():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(BfsIntersection(is_multiple_source=False)),
+        method_rpq=MethodRpq(MethodBfs(is_multiple_source=False)),
     ) == {5}
