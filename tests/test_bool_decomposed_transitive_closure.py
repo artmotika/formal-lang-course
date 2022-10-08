@@ -11,8 +11,6 @@ def test_transactive_closure():
     transitive_closure_matrix = BoolDecomposedFA.from_fa(
         get_test_fa(states, start_states, final_states, transitions)
     ).transitive_closure()
-    print(transitive_closure_matrix.nonzero()[0])
-    print(transitive_closure_matrix.nonzero()[1])
     for (x, y) in zip(*transitive_closure_matrix.nonzero()):
         if not (x, y) in zip(
             array([0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4]),
