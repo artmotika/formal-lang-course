@@ -1,12 +1,12 @@
-from project.bool_decomposed_fa import BoolDecomposedFA
+from project.bool_decomposed_fa_csc import BoolDecomposedFA
 from typing import Any
-from scipy.sparse import csr_matrix
+from scipy.sparse import csc_matrix
 from typing import Union
 
 
-class TensorIntersection:
+class TensorIntersectionCsc:
     __intersection: BoolDecomposedFA
-    __path_matrix: csr_matrix
+    __path_matrix: csc_matrix
     __result: set[tuple[Any, Any]]
 
     def __init__(
@@ -58,8 +58,8 @@ class TensorIntersection:
         return self.__result
 
 
-class BfsIntersection:
-    _path_matrix: csr_matrix
+class BfsIntersectionCsc:
+    _path_matrix: csc_matrix
     _result: Union[set, set[tuple[Any, Any]]]
 
     def __init__(
@@ -74,7 +74,7 @@ class BfsIntersection:
         return self._result
 
 
-class BfsIntersectionSet(BfsIntersection):
+class BfsIntersectionCscSet(BfsIntersectionCsc):
     def bfs_intersect(self):
         self._path_matrix = self.bool_decomposed_1.get_bfs_intersection(
             self.bool_decomposed_2,
@@ -98,7 +98,7 @@ class BfsIntersectionSet(BfsIntersection):
         self._result = result
 
 
-class BfsIntersectionMS(BfsIntersection):
+class BfsIntersectionCscMS(BfsIntersectionCsc):
     def bfs_intersect(self):
         self._path_matrix = self.bool_decomposed_1.get_bfs_intersection(
             self.bool_decomposed_2,

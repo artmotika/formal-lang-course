@@ -4,6 +4,7 @@ cfpq-data
 networkx
 numpy
 pre-commit
+prettytable
 pydot
 pyformlang
 pytest

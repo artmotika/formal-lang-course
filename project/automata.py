@@ -4,7 +4,7 @@ from pyformlang.finite_automaton import EpsilonNFA
 from pyformlang.finite_automaton import State
 from pyformlang.finite_automaton import Symbol
 from pyformlang.regular_expression import Regex
-from project.bool_decomposed_fa import BoolDecomposedFA
+from project.bool_decomposed_fa_csr import BoolDecomposedFA
 
 # Builds minimal dfa from given regex with rules from pyformlang.regular_expression
 def build_min_dfa_from_regex(regex_string):
@@ -12,7 +12,9 @@ def build_min_dfa_from_regex(regex_string):
 
 
 # Builds nfa from given graph whether it's a networkx graph or the path to the dot file
-def build_nfa_from_graph(graph, start_states: set = None, final_states: set = None):
+def build_nfa_from_graph(
+    graph, start_states: set = None, final_states: set = None
+) -> EpsilonNFA:
     multi_di_graph = graph if isinstance(graph, MultiDiGraph) else read_dot(graph)
 
     enfa = EpsilonNFA(
