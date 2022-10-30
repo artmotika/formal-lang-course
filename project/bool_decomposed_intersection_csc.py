@@ -74,11 +74,11 @@ class BfsIntersectionCsc:
         return self._result
 
 
-class BfsIntersectionCscSet(BfsIntersectionCsc):
+class BfsIntersectionCscMS(BfsIntersectionCsc):
     def bfs_intersect(self):
         self._path_matrix = self.bool_decomposed_1.get_bfs_intersection(
             self.bool_decomposed_2,
-            is_multiple_source=False,
+            is_single_source=False,
         )
 
     def filter_finals(self):
@@ -98,11 +98,11 @@ class BfsIntersectionCscSet(BfsIntersectionCsc):
         self._result = result
 
 
-class BfsIntersectionCscMS(BfsIntersectionCsc):
+class BfsIntersectionCscSS(BfsIntersectionCsc):
     def bfs_intersect(self):
         self._path_matrix = self.bool_decomposed_1.get_bfs_intersection(
             self.bool_decomposed_2,
-            is_multiple_source=True,
+            is_single_source=True,
         )
 
     def filter_starts_to_finals(self):
@@ -121,7 +121,7 @@ class BfsIntersectionCscMS(BfsIntersectionCsc):
             ):
                 result.add(
                     (
-                        self.bool_decomposed_1.multiple_source_dict.get(
+                        self.bool_decomposed_1.single_source_dict.get(
                             i // n_states_aut2
                         ).value,
                         aut1_state.value,
