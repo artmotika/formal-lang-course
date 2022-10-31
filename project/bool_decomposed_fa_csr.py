@@ -110,10 +110,7 @@ class BoolDecomposedFA:
                 if state1 in self.final_states and state2 in other.final_states:
                     inter_final_states.add(state)
 
-        inter_symbols = (
-            self.adjacency_matrices.keys() & other.adjacency_matrices.keys()
-            | set(iter([Symbol("epsilon")]))
-        )
+        inter_symbols = self.adjacency_matrices.keys() & other.adjacency_matrices.keys()
         inter_adjacency_matrices = {
             symbol: kron(
                 self.adjacency_matrices.get(symbol),
