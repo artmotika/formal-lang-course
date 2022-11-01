@@ -5,14 +5,14 @@ from typing import Any
 from typing import Union
 from project.bool_decomposed_intersection_csr import (
     TensorIntersectionCsr,
-    BfsIntersectionCsrSet,
     BfsIntersectionCsrMS,
+    BfsIntersectionCsrSS,
 )
 
 from project.bool_decomposed_intersection_csc import (
     TensorIntersectionCsc,
-    BfsIntersectionCscSet,
     BfsIntersectionCscMS,
+    BfsIntersectionCscSS,
 )
 
 
@@ -21,8 +21,8 @@ class MethodTensor:
 
 
 class MethodBfs:
-    def __init__(self, is_multiple_source):
-        self.is_multiple_source = is_multiple_source
+    def __init__(self, is_single_source):
+        self.is_single_source = is_single_source
 
 
 class MethodRpq:
@@ -50,20 +50,21 @@ def rpq(
             result.filter_starts_to_finals()
             return result.get_result()
         elif isinstance(method_rpq.method, MethodBfs):
-            if method_rpq.method.is_multiple_source:
-                result = BfsIntersectionCsrMS(
+            if method_rpq.method.is_single_source:
+                result = BfsIntersectionCsrSS(
                     bool_decomposed_aut1, bool_decomposed_aut2
                 )
                 result.bfs_intersect()
                 result.filter_starts_to_finals()
                 return result.get_result()
             else:
-                result = BfsIntersectionCsrSet(
+                result = BfsIntersectionCsrMS(
                     bool_decomposed_aut1, bool_decomposed_aut2
                 )
                 result.bfs_intersect()
                 result.filter_finals()
                 return result.get_result()
+
         else:
             raise ValueError("In rpq() incorrect method_rpq")
     else:
@@ -74,19 +75,20 @@ def rpq(
             result.filter_starts_to_finals()
             return result.get_result()
         elif isinstance(method_rpq.method, MethodBfs):
-            if method_rpq.method.is_multiple_source:
-                result = BfsIntersectionCscMS(
+            if method_rpq.method.is_single_source:
+                result = BfsIntersectionCscSS(
                     bool_decomposed_aut1, bool_decomposed_aut2
                 )
                 result.bfs_intersect()
                 result.filter_starts_to_finals()
                 return result.get_result()
             else:
-                result = BfsIntersectionCscSet(
+                result = BfsIntersectionCscMS(
                     bool_decomposed_aut1, bool_decomposed_aut2
                 )
                 result.bfs_intersect()
                 result.filter_finals()
                 return result.get_result()
+
         else:
             raise ValueError("In rpq() incorrect method_rpq")

@@ -27,7 +27,11 @@ def test_cfg_from_file(tmp_path):
 
 
 def test_cfg_to_weakened_form_chomsky():
-    cfg = CFG.from_text("S -> a S b S | ε")
+    cfg = CFG.from_text(
+        """S -> a S b S | ε | N
+    N -> c
+    """
+    )
     actual_cfg = cfg_to_weakened_form_chomsky(cfg)
     expected_cfg = CFG(
         start_symbol=Variable("S"),
@@ -38,6 +42,7 @@ def test_cfg_to_weakened_form_chomsky():
             Production(Variable("C#CNF#1"), [Variable("S"), Variable("C#CNF#2")]),
             Production(Variable("b#CNF#"), [Terminal("b")]),
             Production(Variable("C#CNF#2"), [Variable("b#CNF#"), Variable("S")]),
+            Production(Variable("S"), [Terminal("c")]),
         },
     )
     assert all(

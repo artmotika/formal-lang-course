@@ -15,7 +15,7 @@ class BoolDecomposedFA:
     tensor_intersection_dict: dict[
         State, State
     ]  # Сопоставление состоянию из пересечения состояния из графа
-    multiple_source_dict: dict[int, State]
+    single_source_dict: dict[int, State]
 
     def __init__(
         self,
@@ -163,7 +163,7 @@ class BoolDecomposedFA:
         return result
 
     def get_bfs_intersection(
-        self, other: "BoolDecomposedFA", is_multiple_source: bool = False
+        self, other: "BoolDecomposedFA", is_single_source: bool = False
     ) -> csc_matrix:
         self_states = self.state_to_idx.keys()
         other_states = other.state_to_idx.keys()
@@ -171,22 +171,22 @@ class BoolDecomposedFA:
         n_other = len(other_states)
         n_start_states_self = len(self.start_states)
 
-        def get_ms_start_front() -> csc_matrix:
+        def get_ss_start_front() -> csc_matrix:
             data, row, col = [], [], []
             i = 0
-            self.multiple_source_dict = {}
+            self.single_source_dict = {}
             for state_s in self.start_states:
                 for state_o in other.start_states:
-                    self.multiple_source_dict[i] = state_s
+                    self.single_source_dict[i] = state_s
                     idx_other = other.state_to_idx.get(state_o)
-                    idx_other_ms = other.state_to_idx.get(state_o) + n_other * i
+                    idx_other_ss = other.state_to_idx.get(state_o) + n_other * i
                     i += 1
                     data.append(True)
-                    row.append(idx_other_ms)
+                    row.append(idx_other_ss)
                     col.append(idx_other)
                     idx_self = self.state_to_idx.get(state_s)
                     data.append(True)
-                    row.append(idx_other_ms)
+                    row.append(idx_other_ss)
                     col.append(idx_self + n_other)
             return csc_matrix(
                 (
@@ -261,10 +261,10 @@ class BoolDecomposedFA:
             )
 
         def transform_rows(
-            matrix: csc_matrix, is_ms: bool = is_multiple_source
+            matrix: csc_matrix, is_ss: bool = is_single_source
         ) -> csc_matrix:
             count_f = 2
-            if is_ms:
+            if is_ss:
                 count_f = n_start_states_self + 1
             data, row, col = [], [], []
             for c in range(1, count_f):
@@ -287,8 +287,8 @@ class BoolDecomposedFA:
                 dtype=bool,
             )
 
-        if is_multiple_source:
-            front = get_ms_start_front()
+        if is_single_source:
+            front = get_ss_start_front()
             cur_visited = front.copy()
             previous_visited = cur_visited.copy()
             while True:

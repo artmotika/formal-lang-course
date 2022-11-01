@@ -15,8 +15,8 @@ def test_rpq1():
         ),
         start_states={1},
         final_states={1, 2, 3},
-        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
-    ) == {(1, 3)}
+        method_rpq=MethodRpq(MethodBfs(is_single_source=False)),
+    ) == {3}
 
 
 def test_rpq2():
@@ -44,8 +44,8 @@ def test_rpq2():
         ),
         start_states={1, 2},
         final_states={1, 10, 3},
-        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
-    ) == {(2, 10), (1, 10)}
+        method_rpq=MethodRpq(MethodBfs(is_single_source=False)),
+    ) == {10}
 
 
 def test_rpq3():
@@ -73,8 +73,8 @@ def test_rpq3():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
-    ) == {(3, 10), (1, 7), (2, 7), (2, 10), (6, 10), (1, 10), (4, 10)}
+        method_rpq=MethodRpq(MethodBfs(is_single_source=False)),
+    ) == {10, 7}
 
 
 def test_rpq4():
@@ -102,8 +102,8 @@ def test_rpq4():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
-    ) == {(1, 8), (2, 8), (2, 9), (2, 10)}
+        method_rpq=MethodRpq(MethodBfs(is_single_source=False)),
+    ) == {8, 9, 10}
 
 
 def test_rpq5():
@@ -131,45 +131,8 @@ def test_rpq5():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
-    ) == {
-        (3, 9),
-        (3, 7),
-        (2, 2),
-        (3, 4),
-        (1, 2),
-        (1, 9),
-        (1, 5),
-        (1, 6),
-        (3, 6),
-        (3, 3),
-        (2, 8),
-        (2, 5),
-        (2, 7),
-        (1, 7),
-        (2, 9),
-        (9, 9),
-        (6, 9),
-        (7, 7),
-        (7, 8),
-        (10, 10),
-        (7, 9),
-        (10, 11),
-        (1, 8),
-        (5, 9),
-        (11, 11),
-        (5, 5),
-        (4, 4),
-        (6, 6),
-        (5, 8),
-        (3, 8),
-        (1, 1),
-        (8, 8),
-        (8, 9),
-        (6, 8),
-        (6, 7),
-        (2, 6),
-    }
+        method_rpq=MethodRpq(MethodBfs(is_single_source=False)),
+    ) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
 
 
 def test_rpq6():
@@ -197,5 +160,5 @@ def test_rpq6():
         ),
         start_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
         final_states={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        method_rpq=MethodRpq(MethodBfs(is_multiple_source=True)),
-    ) == {(5, 5), (6, 5), (1, 5), (9, 5), (7, 5), (2, 5), (8, 5), (3, 5)}
+        method_rpq=MethodRpq(MethodBfs(is_single_source=False)),
+    ) == {5}
