@@ -11,7 +11,22 @@ def cfg_from_file(
 
 
 def cfg_to_weakened_form_chomsky(cfg: CFG) -> CFG:
-    new_cfg = cfg.remove_useless_symbols()
-    new_productions = new_cfg._get_productions_with_only_single_terminals()
-    new_productions = new_cfg._decompose_productions(new_productions)
-    return CFG(start_symbol=new_cfg._start_symbol, productions=set(new_productions))
+    # unit production: S -> N ; N -> a
+    # without unit: S -> a
+    cfg_without_unit_productions = (
+        cfg.remove_useless_symbols()
+        .eliminate_unit_productions()
+        .remove_useless_symbols()
+    )
+    # get_productions_with_only_single_terminals() is productions look only like S -> ε or S -> a or S -> N1 .. Nn
+    new_productions = (
+        cfg_without_unit_productions._get_productions_with_only_single_terminals()
+    )
+    # decompose_productions() is transforming productions with length more than 2 to productions with length 2
+    new_productions = cfg_without_unit_productions._decompose_productions(
+        new_productions
+    )
+    return CFG(
+        start_symbol=cfg_without_unit_productions._start_symbol,
+        productions=set(new_productions),
+    )
