@@ -14,24 +14,55 @@ cfg = CFG.from_text(
     N -> gorilla | dog | carrots"""
 )
 
-# for p in cfg.productions:
-#     print("---------")
-#     print(p.head)
-#     print(p.body)
-#     print("---------")
+for p in cfg.productions:
+    print("---------")
+    print(p.head)
+    print(p.body)
+    print("---------")
+
+ecfg = ECFG.from_pyfl_cfg(cfg)
+productions = ecfg.productions
+for ph in productions.keys():
+    body = ""
+    for pb in productions.get(ph):
+        body += str(pb) + " | "
+    print(f"\n{ph} -> {body}\n")
+
+print("---------")
+set1 = set()
+set2 = set()
+
+rsm = ecfg.to_rsm()
+
+print(rsm.start_module)
+modules = rsm.modules
+for k in modules.keys():
+    for x, y, z in modules.get(k):
+        set1.add(
+            f"\n{k}:   {x} - {y} -> {z}  start_states = {modules.get(k).start_states} final_states = {modules.get(k).final_states}\n"
+        )
+
+print("--------")
+
+rsm = RSM.from_pyfl_cfg(cfg)
+
+print(rsm.start_module)
+modules = rsm.modules
+for k in modules.keys():
+    for x, y, z in modules.get(k):
+        set2.add(
+            f"\n{k}:   {x} - {y} -> {z}  start_states = {modules.get(k).start_states} final_states = {modules.get(k).final_states}\n"
+        )
+
+print(set1 == set2)
 
 # ecfg = ECFG.from_pyfl_cfg(cfg)
 # print(ecfg.start_symbol)
 # print(ecfg.productions)
 # rsm = ecfg.to_rsm()
-rsm = RSM.from_pyfl_cfg(cfg)
-print(rsm.start_module)
-modules = rsm.modules
-for k in modules.keys():
-    for x, y, z in modules.get(k):
-        print(
-            f"\n{k}:   {x} - {y} -> {z}  start_states = {modules.get(k).start_states} final_states = {modules.get(k).final_states}\n"
-        )
+
+
+# rsm = RSM.from_pyfl_cfg(cfg)
 
 
 # print(cfg.get_generating_symbols())
