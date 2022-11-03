@@ -9,16 +9,16 @@ from project.graph_utilities import build_two_cycles_graph_dot_format
 from project.graph_utilities import get_graph
 
 
-# def test_build_nfa_from_graph_from_dataset():
-#     networkx_graph = get_graph("wc")
-#     nfa = build_nfa_from_graph(networkx_graph, {1}, {47})
-#     assert all(
-#         (
-#             nfa.accepts(["A"]),
-#             nfa.get_number_transitions() == 269,
-#             len(nfa.states) == 332,
-#         )
-#     )
+def test_build_nfa_from_graph_from_dataset():
+    networkx_graph = get_graph("wc")
+    nfa = build_nfa_from_graph(networkx_graph, start_states={2})
+    assert all(
+        (
+            nfa.accepts(["a"]),
+            nfa.get_number_transitions() == 269,
+            len(nfa.states) == 332,
+        )
+    )
 
 
 def test_build_nfa_from_graph_from_dot_file(tmp_path):

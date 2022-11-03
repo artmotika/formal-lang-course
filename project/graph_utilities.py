@@ -30,4 +30,5 @@ def build_two_cycles_graph_dot_format(
         num_vertexes_first_cycle, num_vertexes_second_cycle, labels=labels
     )
     # remove '\n' because read_dot from networkx create vertex '\n'
-    open(file_path, "w").write(to_pydot(graph).to_string().replace("\n", ""))
+    with open(file_path, "w") as file:
+        file.write(to_pydot(graph).to_string().replace("\n", ""))

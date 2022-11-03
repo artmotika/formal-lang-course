@@ -2,10 +2,10 @@ from project.graph_utilities import build_two_cycles_graph_dot_format
 from project.graph_utilities import get_graph_count_vertex_edges_labels
 
 
-# def test_get_graph_count_vertex_edges_labels():
-#     expected_result = (332, 269, {"D", "A"})
-#     actual_result = get_graph_count_vertex_edges_labels("wc")
-#     assert expected_result == actual_result
+def test_get_graph_count_vertex_edges_labels():
+    expected_result = (332, 269, {"d", "a"})
+    actual_result = get_graph_count_vertex_edges_labels("wc")
+    assert expected_result == actual_result
 
 
 def test_build_two_cycles_graph_dot_format(tmp_path):

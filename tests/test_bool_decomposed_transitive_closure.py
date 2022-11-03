@@ -1,4 +1,4 @@
-from project.bool_decomposed_fa import BoolDecomposedFA
+from project.bool_decomposed_fa_csr import BoolDecomposedFA
 from tests.test_bool_decomposed_fa import get_test_fa
 from numpy import array
 

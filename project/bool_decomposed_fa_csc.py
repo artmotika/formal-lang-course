@@ -1,6 +1,6 @@
 from pyformlang.finite_automaton import State
 from pyformlang.finite_automaton import Symbol
-from scipy.sparse import csr_matrix
+from scipy.sparse import csc_matrix
 from scipy.sparse import kron
 from pyformlang.finite_automaton import EpsilonNFA
 from numpy import array
@@ -11,11 +11,11 @@ class BoolDecomposedFA:
     idx_to_state: dict[int, State]
     start_states: set[State]
     final_states: set[State]
-    adjacency_matrices: dict[Symbol, csr_matrix]
+    adjacency_matrices: dict[Symbol, csc_matrix]
     tensor_intersection_dict: dict[
         State, State
     ]  # Сопоставление состоянию из пересечения состояния из графа
-    multiple_source_dict: dict[int, State]
+    single_source_dict: dict[int, State]
 
     def __init__(
         self,
@@ -23,7 +23,7 @@ class BoolDecomposedFA:
         idx_to_state: dict[int, State],
         start_states: set[State],
         final_states: set[State],
-        adjacency_matrices: dict[Symbol, csr_matrix],
+        adjacency_matrices: dict[Symbol, csc_matrix],
     ):
         self.state_to_idx = state_to_idx
         self.idx_to_state = idx_to_state
@@ -50,7 +50,7 @@ class BoolDecomposedFA:
     @staticmethod
     def get_adjacency_matrices(
         fa: EpsilonNFA, state_to_idx: dict[State, int]
-    ) -> dict[Symbol, csr_matrix]:
+    ) -> dict[Symbol, csc_matrix]:
         n = len(fa.states)
         symbols = fa.symbols.copy()
         symbols.add(Symbol("epsilon"))
@@ -80,7 +80,7 @@ class BoolDecomposedFA:
                 row[symbol] = row_by_symbol
                 col[symbol] = col_by_symbol
         return {
-            symbol: csr_matrix(
+            symbol: csc_matrix(
                 (
                     array(data.get(symbol)),
                     (array(row.get(symbol)), array(col.get(symbol))),
@@ -110,15 +110,12 @@ class BoolDecomposedFA:
                 if state1 in self.final_states and state2 in other.final_states:
                     inter_final_states.add(state)
 
-        inter_symbols = (
-            self.adjacency_matrices.keys() & other.adjacency_matrices.keys()
-            | set(iter([Symbol("epsilon")]))
-        )
+        inter_symbols = self.adjacency_matrices.keys() & other.adjacency_matrices.keys()
         inter_adjacency_matrices = {
             symbol: kron(
                 self.adjacency_matrices.get(symbol),
                 other.adjacency_matrices.get(symbol),
-            )
+            ).tocsc()
             for symbol in inter_symbols
         }
         return BoolDecomposedFA(
@@ -151,11 +148,11 @@ class BoolDecomposedFA:
             )
         return enfa
 
-    def transitive_closure(self) -> csr_matrix:
+    def transitive_closure(self) -> csc_matrix:
         n = len(self.idx_to_state.keys())
         result = sum(
             self.adjacency_matrices.values(),
-            start=csr_matrix((n, n)),
+            start=csc_matrix((n, n)),
         )
         previous_not_zero = 0
         cur_not_zero = result.count_nonzero()
@@ -166,32 +163,32 @@ class BoolDecomposedFA:
         return result
 
     def get_bfs_intersection(
-        self, other: "BoolDecomposedFA", is_multiple_source: bool = False
-    ) -> csr_matrix:
+        self, other: "BoolDecomposedFA", is_single_source: bool = False
+    ) -> csc_matrix:
         self_states = self.state_to_idx.keys()
         other_states = other.state_to_idx.keys()
         n_self = len(self_states)
         n_other = len(other_states)
         n_start_states_self = len(self.start_states)
 
-        def get_ms_start_front() -> csr_matrix:
+        def get_ss_start_front() -> csc_matrix:
             data, row, col = [], [], []
             i = 0
-            self.multiple_source_dict = {}
+            self.single_source_dict = {}
             for state_s in self.start_states:
                 for state_o in other.start_states:
-                    self.multiple_source_dict[i] = state_s
+                    self.single_source_dict[i] = state_s
                     idx_other = other.state_to_idx.get(state_o)
-                    idx_other_ms = other.state_to_idx.get(state_o) + n_other * i
+                    idx_other_ss = other.state_to_idx.get(state_o) + n_other * i
                     i += 1
                     data.append(True)
-                    row.append(idx_other_ms)
+                    row.append(idx_other_ss)
                     col.append(idx_other)
                     idx_self = self.state_to_idx.get(state_s)
                     data.append(True)
-                    row.append(idx_other_ms)
+                    row.append(idx_other_ss)
                     col.append(idx_self + n_other)
-            return csr_matrix(
+            return csc_matrix(
                 (
                     array(data),
                     (array(row), array(col)),
@@ -200,7 +197,7 @@ class BoolDecomposedFA:
                 dtype=bool,
             )
 
-        def get_start_front() -> csr_matrix:
+        def get_start_front() -> csc_matrix:
             data, row, col = [], [], []
             for state_o in other.start_states:
                 idx_other = other.state_to_idx.get(state_o)
@@ -212,7 +209,7 @@ class BoolDecomposedFA:
                     data.append(True)
                     row.append(idx_other)
                     col.append(idx_self + n_other)
-            return csr_matrix(
+            return csc_matrix(
                 (
                     array(data),
                     (array(row), array(col)),
@@ -221,7 +218,7 @@ class BoolDecomposedFA:
                 dtype=bool,
             )
 
-        def get_direct_sum(matrix1: csr_matrix, matrix2: csr_matrix) -> csr_matrix:
+        def get_direct_sum(matrix1: csc_matrix, matrix2: csc_matrix) -> csc_matrix:
             data, row, col = [], [], []
             for i, j in zip(*matrix1.nonzero()):
                 data.append(True)
@@ -234,7 +231,7 @@ class BoolDecomposedFA:
                 data.append(True)
                 row.append(i + shape1)
                 col.append(j + shape1)
-            return csr_matrix(
+            return csc_matrix(
                 (
                     array(data),
                     (array(row), array(col)),
@@ -244,8 +241,8 @@ class BoolDecomposedFA:
             )
 
         def get_submatrix(
-            matrix: csr_matrix, range1: tuple, range2: tuple
-        ) -> csr_matrix:
+            matrix: csc_matrix, range1: tuple, range2: tuple
+        ) -> csc_matrix:
             data, row, col = [], [], []
             shape1 = range1[1] - range1[0]
             shape2 = range2[1] - range2[0]
@@ -254,7 +251,7 @@ class BoolDecomposedFA:
                     data.append(True)
                     row.append(i - range1[0])
                     col.append(j - range2[0])
-            return csr_matrix(
+            return csc_matrix(
                 (
                     array(data),
                     (array(row), array(col)),
@@ -264,10 +261,10 @@ class BoolDecomposedFA:
             )
 
         def transform_rows(
-            matrix: csr_matrix, is_ms: bool = is_multiple_source
-        ) -> csr_matrix:
+            matrix: csc_matrix, is_ss: bool = is_single_source
+        ) -> csc_matrix:
             count_f = 2
-            if is_ms:
+            if is_ss:
                 count_f = n_start_states_self + 1
             data, row, col = [], [], []
             for c in range(1, count_f):
@@ -281,7 +278,7 @@ class BoolDecomposedFA:
                                 data.append(True)
                                 row.append(n_other * (c - 1) + j)
                                 col.append(l)
-            return csr_matrix(
+            return csc_matrix(
                 (
                     array(data),
                     (array(row), array(col)),
@@ -290,12 +287,12 @@ class BoolDecomposedFA:
                 dtype=bool,
             )
 
-        if is_multiple_source:
-            front = get_ms_start_front()
+        if is_single_source:
+            front = get_ss_start_front()
             cur_visited = front.copy()
             previous_visited = cur_visited.copy()
             while True:
-                new_front = csr_matrix(
+                new_front = csc_matrix(
                     (n_other * n_start_states_self, n_other + n_self), dtype=bool
                 )
                 inter_symbols = set(other.adjacency_matrices.keys()).intersection(
@@ -323,7 +320,7 @@ class BoolDecomposedFA:
             cur_visited = front.copy()
             previous_visited = cur_visited.copy()
             while True:
-                new_front = csr_matrix((n_other, n_other + n_self), dtype=bool)
+                new_front = csc_matrix((n_other, n_other + n_self), dtype=bool)
                 inter_symbols = set(other.adjacency_matrices.keys()).intersection(
                     self.adjacency_matrices.keys()
                 )

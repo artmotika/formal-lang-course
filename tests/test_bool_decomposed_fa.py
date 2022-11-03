@@ -1,4 +1,4 @@
-from project.bool_decomposed_fa import BoolDecomposedFA
+from project.bool_decomposed_fa_csr import BoolDecomposedFA
 from pyformlang.finite_automaton import EpsilonNFA
 from pyformlang.finite_automaton import State
 from pyformlang.finite_automaton import Symbol
