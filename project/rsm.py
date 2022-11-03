@@ -38,7 +38,7 @@ class RSM:
     #     res_cfg = CFG(start_symbol=self.start_module, productions=set())
     #     for var in modules.keys():
     #         temp_cfg = modules.get(var).to_regex().to_cfg(starting_symbol=f"{var}S")
-    #         new_cfg = res_cfg.union(temp_cfg)
+    #         new_cfg = res_cfg | temp_cfg
     #         productions = set(new_cfg.productions)
     #         productions.add(Production(head=var, body=[Variable(f"{var}S")]))
     #         res_cfg = CFG(start_symbol=self.start_module, productions=productions)

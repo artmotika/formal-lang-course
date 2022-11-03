@@ -24,7 +24,7 @@ class ECFG:
             if production is None:
                 productions[p.head] = Regex(regex[:-1])
             else:
-                productions[p.head] = production.union(Regex(regex[:-1]))
+                productions[p.head] = production | Regex(regex[:-1])
         return cls(start_symbol=cfg.start_symbol, productions=productions)
 
     @classmethod
