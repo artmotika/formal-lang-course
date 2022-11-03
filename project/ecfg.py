@@ -22,9 +22,9 @@ class ECFG:
             for pb in body:
                 regex += f"{pb.value} "
             if production is None:
-                productions[p.head] = Regex(regex)
+                productions[p.head] = Regex(regex[:-1])
             else:
-                productions[p.head] = production.union(Regex(regex))
+                productions[p.head] = production.union(Regex(regex[:-1]))
         return cls(start_symbol=cfg.start_symbol, productions=productions)
 
     @classmethod
@@ -35,7 +35,7 @@ class ECFG:
             if not line:
                 continue
             head, body = line.split("->")
-            productions[Variable(head)] = Regex(body)
+            productions[Variable(head.strip())] = Regex(body)
         return cls(start_symbol=start_symbol, productions=productions)
 
     @classmethod

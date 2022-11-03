@@ -1,8 +1,7 @@
 from collections import deque
 
 from pyformlang.cfg.cfg import CFG, Variable, Production
-from pyformlang.finite_automaton import EpsilonNFA
-from pyformlang.finite_automaton import State
+from pyformlang.finite_automaton import EpsilonNFA, State
 
 from project.ecfg import ECFG
 
@@ -34,16 +33,16 @@ class RSM:
             productions[var] = modules.get(var).to_regex()
         return ECFG(start_symbol=self.start_module, productions=productions)
 
-    def to_pyfl_cfg(self) -> CFG:
-        modules = self.modules
-        res_cfg = CFG(start_symbol=self.start_module, productions=set())
-        for var in modules.keys():
-            temp_cfg = modules.get(var).to_regex().to_cfg(starting_symbol=f"{var}S")
-            new_cfg = res_cfg.union(temp_cfg)
-            productions = set(new_cfg.productions)
-            productions.add(Production(head=var, body=[Variable(f"{var}S")]))
-            res_cfg = CFG(start_symbol=self.start_module, productions=productions)
-        return res_cfg
+    # def to_pyfl_cfg(self) -> CFG:
+    #     modules = self.modules
+    #     res_cfg = CFG(start_symbol=self.start_module, productions=set())
+    #     for var in modules.keys():
+    #         temp_cfg = modules.get(var).to_regex().to_cfg(starting_symbol=f"{var}S")
+    #         new_cfg = res_cfg.union(temp_cfg)
+    #         productions = set(new_cfg.productions)
+    #         productions.add(Production(head=var, body=[Variable(f"{var}S")]))
+    #         res_cfg = CFG(start_symbol=self.start_module, productions=productions)
+    #     return res_cfg
 
     def minimize(self) -> "RSM":
         new_modules = {
