@@ -11,7 +11,7 @@ match_var_to_regex = {
     Variable("N"): Regex("carrots"),
 }
 
-
+# test from pyfromlang cfg to ecfg
 def test_from_pyfl_cfg():
     cfg = CFG.from_text(
         """
