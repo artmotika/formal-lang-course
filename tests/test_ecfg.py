@@ -2,19 +2,14 @@ from pyformlang.cfg.cfg import Variable
 from project.ecfg import ECFG
 from pyformlang.regular_expression.regex import Regex
 from pyformlang.cfg import CFG
-from typing import Union
 
 
-def match_var_to_regex(var: Variable) -> Union[Regex, None]:
-    if var == Variable("S"):
-        return Regex("(NP.VP)")
-    elif var == Variable("NP"):
-        return Regex("(georges|(Det.N))")
-    elif var == Variable("Det"):
-        return Regex("((a)*|the)")
-    elif var == Variable("N"):
-        return Regex("carrots")
-    return None
+match_var_to_regex = {
+    Variable("S"): Regex("(NP.VP)"),
+    Variable("NP"): Regex("(georges|(Det.N))"),
+    Variable("Det"): Regex("((a)*|the)"),
+    Variable("N"): Regex("carrots"),
+}
 
 
 def test_from_pyfl_cfg():
@@ -28,45 +23,38 @@ def test_from_pyfl_cfg():
     )
 
     ecfg = ECFG.from_pyfl_cfg(cfg)
-    expended_productions = ecfg.productions
-    expected_productions_str_set = set()
-    for var in expended_productions.keys():
-        expected_productions_str_set.add(f"{var} -> {ecfg.productions[var]}")
-    actual_productions_str_set1 = set()
-    actual_productions_str_set1.add("Det -> (the|a)")
-    actual_productions_str_set1.add("VP -> None")
-    actual_productions_str_set1.add("N -> carrots")
-    actual_productions_str_set1.add("NP -> (georges|(Det.N))")
-    actual_productions_str_set1.add("S -> (NP.VP)")
+    actual_productions = ecfg.productions
+    expected_productions_dict = dict()
+    expected_productions_dict[Variable("Det")] = {
+        Regex("a|the").get_tree_str(),
+        Regex("the|a").get_tree_str(),
+    }
+    expected_productions_dict[Variable("VP")] = None
+    expected_productions_dict[Variable("N")] = {Regex("carrots").get_tree_str()}
+    expected_productions_dict[Variable("NP")] = {
+        Regex("(Det.N)|georges").get_tree_str(),
+        Regex("georges|(Det.N)").get_tree_str(),
+    }
+    expected_productions_dict[Variable("S")] = {Regex("NP.VP").get_tree_str()}
 
-    actual_productions_str_set2 = set()
-    actual_productions_str_set2.add("Det -> (a|the)")
-    actual_productions_str_set2.add("VP -> None")
-    actual_productions_str_set2.add("N -> carrots")
-    actual_productions_str_set2.add("NP -> ((Det.N)|georges)")
-    actual_productions_str_set2.add("S -> (NP.VP)")
-
-    actual_productions_str_set3 = set()
-    actual_productions_str_set3.add("Det -> (a|the)")
-    actual_productions_str_set3.add("VP -> None")
-    actual_productions_str_set3.add("N -> carrots")
-    actual_productions_str_set3.add("NP -> (georges|(Det.N))")
-    actual_productions_str_set3.add("S -> (NP.VP)")
-
-    actual_productions_str_set4 = set()
-    actual_productions_str_set4.add("Det -> (the|a)")
-    actual_productions_str_set4.add("VP -> None")
-    actual_productions_str_set4.add("N -> carrots")
-    actual_productions_str_set4.add("NP -> ((Det.N)|georges)")
-    actual_productions_str_set4.add("S -> (NP.VP)")
+    results = []
+    for k in expected_productions_dict.keys() | actual_productions.keys():
+        actual_p = actual_productions.get(k)
+        expected_p = expected_productions_dict.get(k)
+        if actual_p is None:
+            if expected_p is None:
+                results.append(True)
+            else:
+                results.append(False)
+        elif expected_p is None:
+            results.append(False)
+        else:
+            results.append(actual_p.get_tree_str() in expected_p)
 
     assert all(
         (
             ecfg.start_symbol == cfg.start_symbol,
-            expected_productions_str_set == actual_productions_str_set1
-            or expected_productions_str_set == actual_productions_str_set2
-            or expected_productions_str_set == actual_productions_str_set3
-            or expected_productions_str_set == actual_productions_str_set4,
+            all(tuple(results)),
         )
     )
 
@@ -87,32 +75,32 @@ def test_from_text():
             ecfg.start_symbol == Variable("NP"),
             all(
                 productions.get(var).accepts(["NP", "VP"])
-                == match_var_to_regex(var).accepts(["NP", "VP"])
+                == match_var_to_regex.get(var).accepts(["NP", "VP"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["georges"])
-                == match_var_to_regex(var).accepts(["georges"])
+                == match_var_to_regex.get(var).accepts(["georges"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["Det", "N"])
-                == match_var_to_regex(var).accepts(["Det", "N"])
+                == match_var_to_regex.get(var).accepts(["Det", "N"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["a*"])
-                == match_var_to_regex(var).accepts(["a*"])
+                == match_var_to_regex.get(var).accepts(["a*"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["the"])
-                == match_var_to_regex(var).accepts(["the"])
+                == match_var_to_regex.get(var).accepts(["the"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["carrots"])
-                == match_var_to_regex(var).accepts(["carrots"])
+                == match_var_to_regex.get(var).accepts(["carrots"])
                 for var in productions.keys()
             ),
         )
@@ -138,32 +126,32 @@ def test_from_file(tmp_path):
             ecfg.start_symbol == Variable("NP"),
             all(
                 productions.get(var).accepts(["NP", "VP"])
-                == match_var_to_regex(var).accepts(["NP", "VP"])
+                == match_var_to_regex.get(var).accepts(["NP", "VP"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["georges"])
-                == match_var_to_regex(var).accepts(["georges"])
+                == match_var_to_regex.get(var).accepts(["georges"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["Det", "N"])
-                == match_var_to_regex(var).accepts(["Det", "N"])
+                == match_var_to_regex.get(var).accepts(["Det", "N"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["a*"])
-                == match_var_to_regex(var).accepts(["a*"])
+                == match_var_to_regex.get(var).accepts(["a*"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["the"])
-                == match_var_to_regex(var).accepts(["the"])
+                == match_var_to_regex.get(var).accepts(["the"])
                 for var in productions.keys()
             ),
             all(
                 productions.get(var).accepts(["carrots"])
-                == match_var_to_regex(var).accepts(["carrots"])
+                == match_var_to_regex.get(var).accepts(["carrots"])
                 for var in productions.keys()
             ),
         )
