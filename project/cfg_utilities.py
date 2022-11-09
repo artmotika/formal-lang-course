@@ -53,17 +53,18 @@ def cfg_accepts_word(cfg: CFG, word: str) -> bool:
                     if terminal == word[i]:
                         dp[i, i, var_to_int.get(p.head)] = True
 
+    two_var_productions = {p for p in cfg.productions if len(p.body) == 2}
+
     # cyk algorithm
     for m in range(1, n):
         for i in range(n - m):
-            for p in cfg.productions:
-                if len(p.body) == 2:
-                    for k in range(i, i + m):
-                        if (
-                            dp[i, k, var_to_int.get(p.body[0])]
-                            and dp[k + 1, i + m, var_to_int.get(p.body[1])]
-                        ):
-                            dp[i, i + m, var_to_int.get(p.head)] = True
-                            continue
+            for p in two_var_productions:
+                for k in range(i, i + m):
+                    if (
+                        dp[i, k, var_to_int.get(p.body[0])]
+                        and dp[k + 1, i + m, var_to_int.get(p.body[1])]
+                    ):
+                        dp[i, i + m, var_to_int.get(p.head)] = True
+                        continue
 
     return dp[0, n - 1, var_to_int.get(cfg.start_symbol)]
