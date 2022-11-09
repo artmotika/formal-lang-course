@@ -1,8 +1,7 @@
 from networkx.drawing.nx_pydot import read_dot
 from networkx.classes.multidigraph import MultiDiGraph
 from pyformlang.finite_automaton import EpsilonNFA
-from pyformlang.finite_automaton import State
-from pyformlang.finite_automaton import Symbol
+from pyformlang.finite_automaton import State, Symbol
 from pyformlang.regular_expression import Regex
 from project.bool_decomposed_fa_csr import BoolDecomposedFA
 

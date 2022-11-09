@@ -7,16 +7,6 @@ from numpy import array
 
 
 class BoolDecomposedFA:
-    state_to_idx: dict[State, int]
-    idx_to_state: dict[int, State]
-    start_states: set[State]
-    final_states: set[State]
-    adjacency_matrices: dict[Symbol, csc_matrix]
-    tensor_intersection_dict: dict[
-        State, State
-    ]  # Сопоставление состоянию из пересечения состояния из графа
-    single_source_dict: dict[int, State]
-
     def __init__(
         self,
         state_to_idx: dict[State, int],
@@ -30,6 +20,10 @@ class BoolDecomposedFA:
         self.start_states = start_states
         self.final_states = final_states
         self.adjacency_matrices = adjacency_matrices
+        self.tensor_intersection_dict: dict[
+            State, State
+        ] = {}  # Сопоставление состоянию из пересечения состояния из графа
+        self.single_source_dict: dict[int, State] = {}
 
     # fa from pyformlang
     @classmethod
