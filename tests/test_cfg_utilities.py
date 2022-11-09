@@ -54,25 +54,6 @@ def test_cfg_to_weakened_form_chomsky():
     )
 
 
-def test_cfg_accepts_word():
-    cfg = CFG.from_text(
-        """S -> a S b S | ε | N
-    N -> c
-    """
-    )
-    assert all(
-        (
-            cfg_accepts_word(cfg, ""),
-            cfg_accepts_word(cfg, "abaabb"),
-            not cfg_accepts_word(cfg, "abaabbb"),
-            cfg_accepts_word(cfg, "c"),
-            not cfg_accepts_word(cfg, "ca"),
-            not cfg_accepts_word(cfg, "q"),
-            cfg_accepts_word(cfg, "ab"),
-        )
-    )
-
-
 def test_cfg_accepts_word1():
     cfg = CFG.from_text(
         """S -> a S b S | ε | N
