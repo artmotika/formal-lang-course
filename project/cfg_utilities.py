@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Union
 from pyformlang.cfg.cfg import CFG, Variable, Terminal
-from numpy import ndarray
+from numpy import full
 
 
 def cfg_from_file(
@@ -42,12 +42,7 @@ def cfg_accepts_word(cfg: CFG, word: str) -> bool:
     cfg = cfg.to_normal_form()
     N = len(cfg.variables)
     var_to_int = {var: num for num, var in enumerate(cfg.variables)}
-    dp = ndarray(shape=(n, n, N), dtype=bool)
-
-    for i in range(n):
-        for j in range(n):
-            for k in range(N):
-                dp[i, j, k] = False
+    dp = full((n, n, N), False)
 
     for p in cfg.productions:
         if len(p.body) == 1:
