@@ -35,7 +35,7 @@ class ECFG:
             if not line:
                 continue
             head, body = line.split("->")
-            productions[Variable(head.strip())] = Regex(body)
+            productions[Variable(head.strip())] = Regex(body.strip())
         return cls(start_symbol=start_symbol, productions=productions)
 
     @classmethod
