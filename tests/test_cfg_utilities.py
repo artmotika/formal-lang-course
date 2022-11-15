@@ -1,5 +1,8 @@
-from project.cfg_utilities import cfg_from_file
-from project.cfg_utilities import cfg_to_weakened_form_chomsky
+from project.cfg_utilities import (
+    cfg_from_file,
+    cfg_to_weakened_form_chomsky,
+    cfg_accepts_word,
+)
 from pyformlang.cfg.cfg import CFG, Variable, Terminal, Production, Epsilon
 
 
@@ -49,5 +52,43 @@ def test_cfg_to_weakened_form_chomsky():
         (
             actual_cfg.start_symbol == expected_cfg.start_symbol,
             actual_cfg.productions == expected_cfg.productions,
+        )
+    )
+
+
+def test_cfg_accepts_word1():
+    cfg = CFG.from_text(
+        """S -> a S b S | ε | N
+    N -> c
+    """
+    )
+    assert all(
+        (
+            cfg_accepts_word(cfg, ""),
+            cfg_accepts_word(cfg, "abaabb"),
+            not cfg_accepts_word(cfg, "abaabbb"),
+            cfg_accepts_word(cfg, "c"),
+            not cfg_accepts_word(cfg, "ca"),
+            not cfg_accepts_word(cfg, "q"),
+            cfg_accepts_word(cfg, "ab"),
+        )
+    )
+
+
+def test_cfg_accepts_word2():
+    cfg = CFG.from_text(
+        """S -> A S2 | ε
+    S2 -> b | B S1 | S1 S3
+    A -> a
+    S1 -> A S2
+    S3 -> b | B S1
+    B -> b
+    """
+    )
+    assert all(
+        (
+            cfg_accepts_word(cfg, ""),
+            cfg_accepts_word(cfg, "aabbab"),
+            not cfg_accepts_word(cfg, "abaa"),
         )
     )

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Union
 from pyformlang.cfg.cfg import CFG, Variable, Terminal
-from numpy import ndarray
+from numpy import full
 
 
 def cfg_from_file(
@@ -31,3 +31,40 @@ def cfg_to_weakened_form_chomsky(cfg: CFG) -> CFG:
         start_symbol=cfg_eliminated_unit_productions._start_symbol,
         productions=set(new_productions),
     )
+
+
+def cfg_accepts_word(cfg: CFG, word: str) -> bool:
+    n = len(word)
+    if n == 0:
+        return cfg.generate_epsilon()
+
+    # init 3dmatrix
+    cfg = cfg.to_normal_form()
+    N = len(cfg.variables)
+    var_to_int = {var: num for num, var in enumerate(cfg.variables)}
+    dp = full((n, n, N), False)
+
+    for p in cfg.productions:
+        if len(p.body) == 1:
+            pb = p.body[0]
+            if isinstance(pb, Terminal):
+                terminal = pb.value
+                for i in range(n):
+                    if terminal == word[i]:
+                        dp[i, i, var_to_int.get(p.head)] = True
+
+    two_var_productions = {p for p in cfg.productions if len(p.body) == 2}
+
+    # cyk algorithm
+    for m in range(1, n):
+        for i in range(n - m):
+            for p in two_var_productions:
+                for k in range(i, i + m):
+                    if (
+                        dp[i, k, var_to_int.get(p.body[0])]
+                        and dp[k + 1, i + m, var_to_int.get(p.body[1])]
+                    ):
+                        dp[i, i + m, var_to_int.get(p.head)] = True
+                        continue
+
+    return dp[0, n - 1, var_to_int.get(cfg.start_symbol)]
