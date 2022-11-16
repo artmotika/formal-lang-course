@@ -65,7 +65,7 @@ def helings(cfg, graph) -> deque[tuple[Variable, Any, Any]]:
                         and Ni == p.body[1].value
                         and (head, nv, u) not in r
                     ):
-                        m.append((head, nv, u))
+                        m.appendleft((head, nv, u))
                         r.append((head, nv, u))
         for (Nj, u_old, nv) in list(r):
             if u_old == u:
@@ -76,6 +76,6 @@ def helings(cfg, graph) -> deque[tuple[Variable, Any, Any]]:
                         and Nj == p.body[1].value
                         and (head, v, nv) not in r
                     ):
-                        m.append((head, v, nv))
+                        m.appendleft((head, v, nv))
                         r.append((head, v, nv))
     return r
