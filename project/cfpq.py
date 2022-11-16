@@ -2,6 +2,7 @@ from pyformlang.cfg.cfg import CFG, Variable
 from networkx.classes.multidigraph import MultiDiGraph
 from typing import Any
 from collections import deque
+from project.cfg_utilities import cfg_to_weakened_form_chomsky
 
 
 def cfpq(
@@ -11,19 +12,18 @@ def cfpq(
     final_nodes: set = None,
 ) -> set[tuple[Any, Any]]:
     result = set()
-    start_nodes_is_none = start_nodes is None
-    final_nodes_is_none = final_nodes is None
+    if start_nodes is None:
+        start_nodes = graph.nodes
+    if final_nodes is None:
+        final_nodes = graph.nodes
     for (e1, e2, e3) in helings(cfg, graph):
-        if (
-            (start_nodes_is_none or e2 in start_nodes)
-            and (final_nodes_is_none or e3 in final_nodes)
-            and e1 == cfg.start_symbol
-        ):
+        if e2 in start_nodes and e3 in final_nodes and e1 == cfg.start_symbol:
             result.add((e2, e3))
     return result
 
 
-def helings(cfg, graph) -> deque[tuple[Variable, Any, Any]]:
+def helings(cfg, graph) -> set[tuple[Variable, Any, Any]]:
+    cfg = cfg_to_weakened_form_chomsky(cfg)
     epsilon_var_heads = set()
     one_var_productions = set()
     two_var_productions = set()
@@ -40,20 +40,16 @@ def helings(cfg, graph) -> deque[tuple[Variable, Any, Any]]:
         else:
             raise ValueError("Cfg in helings() is not in weakened form Chomsky")
 
-    r = deque(
-        [
-            (p.head, node1, node2)
-            for (node1, node2, symbol) in graph.edges(data=True)
-            for p in one_var_productions
-            if symbol["label"] == p.body[0].value
-        ]
-    )
+    one_var = {
+        (p.head, node1, node2)
+        for (node1, node2, symbol) in graph.edges(data=True)
+        for p in one_var_productions
+        if symbol["label"] == p.body[0].value
+    }
+    eps_var = {(head, node, node) for head in epsilon_var_heads for node in graph.nodes}
 
-    for head in epsilon_var_heads:
-        for node in graph.nodes:
-            r.append((head, node, node))
-
-    m = r.copy()
+    r = one_var | eps_var
+    m = deque(r.copy())
     while m:
         (Ni, v, u) = m.pop()
         for (Nj, nv, v_old) in list(r):
@@ -66,7 +62,7 @@ def helings(cfg, graph) -> deque[tuple[Variable, Any, Any]]:
                         and (head, nv, u) not in r
                     ):
                         m.appendleft((head, nv, u))
-                        r.append((head, nv, u))
+                        r.add((head, nv, u))
         for (Nj, u_old, nv) in list(r):
             if u_old == u:
                 for p in two_var_productions:
@@ -77,5 +73,5 @@ def helings(cfg, graph) -> deque[tuple[Variable, Any, Any]]:
                         and (head, v, nv) not in r
                     ):
                         m.appendleft((head, v, nv))
-                        r.append((head, v, nv))
+                        r.add((head, v, nv))
     return r

@@ -43,7 +43,7 @@ def test_helings():
     graph.add_edge(2, 0, label="a")
     graph.add_edge(2, 3, label="b")
     graph.add_edge(3, 2, label="b")
-    assert set(helings(cfg, graph)) == {
+    assert helings(cfg, graph) == {
         (Variable("A"), 0, 1),
         (Variable("A"), 1, 2),
         (Variable("A"), 2, 0),
