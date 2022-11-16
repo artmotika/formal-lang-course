@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Union
-from pyformlang.cfg.cfg import CFG, Variable, Terminal
+from pyformlang.cfg.cfg import CFG, Variable
 from numpy import full
 
 
@@ -46,12 +46,10 @@ def cfg_accepts_word(cfg: CFG, word: str) -> bool:
 
     for p in cfg.productions:
         if len(p.body) == 1:
-            pb = p.body[0]
-            if isinstance(pb, Terminal):
-                terminal = pb.value
-                for i in range(n):
-                    if terminal == word[i]:
-                        dp[i, i, var_to_int.get(p.head)] = True
+            terminal = p.body[0].value
+            for i in range(n):
+                if terminal == word[i]:
+                    dp[i, i, var_to_int.get(p.head)] = True
 
     two_var_productions = {p for p in cfg.productions if len(p.body) == 2}
 

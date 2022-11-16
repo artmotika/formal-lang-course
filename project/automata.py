@@ -1,3 +1,5 @@
+from typing import Union
+
 from networkx.drawing.nx_pydot import read_dot
 from networkx.classes.multidigraph import MultiDiGraph
 from pyformlang.finite_automaton import EpsilonNFA
@@ -12,7 +14,7 @@ def build_min_dfa_from_regex(regex_string):
 
 # Builds nfa from given graph whether it's a networkx graph or the path to the dot file
 def build_nfa_from_graph(
-    graph, start_states: set = None, final_states: set = None
+    graph: Union[MultiDiGraph, str], start_states: set = None, final_states: set = None
 ) -> EpsilonNFA:
     multi_di_graph = graph if isinstance(graph, MultiDiGraph) else read_dot(graph)
 
