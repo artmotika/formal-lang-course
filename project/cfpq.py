@@ -52,7 +52,8 @@ def helings(cfg, graph) -> set[tuple[Any, Variable, Any]]:
     m = deque(r.copy())
     while m:
         (v, Ni, u) = m.pop()
-        for (nv, Nj, v_old) in list(r):
+        temp_r = r.copy()
+        for (nv, Nj, v_old) in temp_r:
             if v_old == v:
                 for p in two_var_productions:
                     head = p.head
@@ -63,7 +64,7 @@ def helings(cfg, graph) -> set[tuple[Any, Variable, Any]]:
                     ):
                         m.appendleft((nv, head, u))
                         r.add((nv, head, u))
-        for (u_old, Nj, nv) in list(r):
+        for (u_old, Nj, nv) in temp_r:
             if u_old == u:
                 for p in two_var_productions:
                     head = p.head
