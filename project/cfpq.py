@@ -4,7 +4,7 @@ from typing import Any
 from collections import deque
 from project.cfg_utilities import cfg_to_weakened_form_chomsky
 from enum import Enum
-from scipy.sparse import dok_matrix
+from scipy.sparse import dok_matrix, eye
 
 
 class CFPQAlgorithm(Enum):
@@ -47,9 +47,6 @@ def matrix(cfg: CFG, graph: MultiDiGraph) -> set[tuple[Any, Variable, Any]]:
     nodes = list(graph.nodes)
     node_to_int = {node: idx for idx, node in enumerate(graph.nodes)}
 
-    for head in epsilon_var_heads:
-        for i in range(n):
-            bool_decomposed_graph_mtx[head][i, i] = True
     for (node1, node2, symbol) in graph.edges(data=True):
         for p in one_var_productions:
             if symbol["label"] == p.body[0].value:
@@ -58,6 +55,8 @@ def matrix(cfg: CFG, graph: MultiDiGraph) -> set[tuple[Any, Variable, Any]]:
                 ] = True
     for var in bool_decomposed_graph_mtx.keys():
         bool_decomposed_graph_mtx[var] = bool_decomposed_graph_mtx[var].tocsr()
+    for head in epsilon_var_heads:
+        bool_decomposed_graph_mtx[head] += eye(n, dtype=bool, format="csr")
     changed = True
     while changed:
         changed = False
