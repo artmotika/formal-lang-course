@@ -1,3 +1,5 @@
+from networkx import MultiDiGraph
+
 from project.automata import build_nfa_from_graph
 from project.automata import build_min_dfa_from_regex
 from project.bool_decomposed_fa_csr import BoolDecomposedFA
@@ -31,8 +33,8 @@ class MethodRpq:
 
 
 def rpq(
-    regex,
-    graph,
+    regex: str,
+    graph: Union[MultiDiGraph, str],
     start_states: set = None,
     final_states: set = None,
     method_rpq: MethodRpq = MethodRpq(MethodTensor()),
