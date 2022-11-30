@@ -4,12 +4,18 @@ from typing import Any
 from collections import deque
 from project.cfg_utilities import cfg_to_weakened_form_chomsky
 from enum import Enum
-from scipy.sparse import dok_matrix, eye
+from scipy.sparse import dok_matrix, eye, bsr_matrix, csr_matrix
+from project.ecfg import ECFG
+from project.rsm import RSM
+from project.bool_decomposed_fa_csr import BoolDecomposedFA
+from project.automata import build_nfa_from_graph
+from pyformlang.finite_automaton import Symbol
 
 
 class CFPQAlgorithm(Enum):
     HELINGS = 0
     MATRIX = 1
+    TENSOR = 2
 
 
 def cfpq(
@@ -24,10 +30,71 @@ def cfpq(
         start_nodes = graph.nodes
     if final_nodes is None:
         final_nodes = graph.nodes
-    for (e1, e2, e3) in [helings, matrix][algo.value](cfg, graph):
+    for (e1, e2, e3) in [helings, matrix, tensor][algo.value](cfg, graph):
         if e2 == cfg.start_symbol and e1 in start_nodes and e3 in final_nodes:
             result.add((e1, e3))
     return result
+
+
+def tensor(cfg: CFG, graph: MultiDiGraph) -> set[tuple[Any, Variable, Any]]:
+    rsm = RSM.from_ecfg(ECFG.from_pyfl_cfg(cfg)).minimize()
+    fa = build_nfa_from_graph(graph)
+
+    rsm_mtx = BoolDecomposedFA.from_rsm(rsm)
+    graph_mtx = BoolDecomposedFA.from_fa(fa)
+
+    n = len(graph)
+
+    for p in cfg.productions:
+        head = p.head
+        len_p_body = len(p.body)
+        if len_p_body == 0:
+            graph_mtx[Symbol(head.value)] += eye(n, dtype=bool, format="csr")
+
+    last_nonzero_indices_count = 0
+    while True:
+        intersection = rsm_mtx.get_intersection(graph_mtx)
+        transactive_closure = intersection.transitive_closure().todok()
+
+        nonzero_indices = list(zip(*transactive_closure.nonzero()))
+        if len(nonzero_indices) == last_nonzero_indices_count:
+            break
+        last_nonzero_indices_count = len(nonzero_indices)
+        for i, j in nonzero_indices:
+            rsm_i, rsm_j = i // n, j // n
+            graph_i, graph_j = (
+                i % n,
+                j % n,
+            )
+            state_from, state_to = (
+                rsm_mtx.idx_to_state[rsm_i],
+                rsm_mtx.idx_to_state[rsm_j],
+            )
+            symbol, _ = state_from.value
+            if (
+                transactive_closure[i, j]
+                and state_from in rsm_mtx.start_states
+                and state_to in rsm_mtx.final_states
+            ):
+                graph_adjacency_mtx = graph_mtx.adjacency_matrices.get(Symbol(symbol))
+                if graph_adjacency_mtx is not None:
+                    graph_mtx.adjacency_matrices[Symbol(symbol)][
+                        graph_i, graph_j
+                    ] = True
+                else:
+                    new_mtx = dok_matrix((n, n), dtype=bool)
+                    new_mtx[graph_i, graph_j] = True
+                    graph_mtx.adjacency_matrices[Symbol(symbol)] = new_mtx.copy()
+
+    return {
+        (
+            graph_mtx.idx_to_state[graph_i],
+            Variable(var),
+            graph_mtx.idx_to_state[graph_j],
+        )
+        for var, mtx in graph_mtx.adjacency_matrices.items()
+        for graph_i, graph_j in zip(*mtx.nonzero())
+    }
 
 
 def matrix(cfg: CFG, graph: MultiDiGraph) -> set[tuple[Any, Variable, Any]]:

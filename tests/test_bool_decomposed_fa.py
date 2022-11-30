@@ -93,21 +93,21 @@ def test_get_intersection():
     symbol2 = Symbol("c")
     symbol3 = Symbol("a")
     expected_state_to_idx = {
-        State("1:3"): 0,
-        State("1:4"): 1,
-        State("1:6"): 2,
-        State("2:3"): 3,
-        State("2:4"): 4,
-        State("2:6"): 5,
+        State((1, 3)): 0,
+        State((1, 4)): 1,
+        State((1, 6)): 2,
+        State((2, 3)): 3,
+        State((2, 4)): 4,
+        State((2, 6)): 5,
     }
     assert all(
         (
             len(inter_bool_decomposed_fa.state_to_idx.keys())
             == len(states1) * len(states2)
             == len(inter_bool_decomposed_fa.idx_to_state.keys()),
-            inter_bool_decomposed_fa.start_states == {"1:3"},
+            inter_bool_decomposed_fa.start_states == {(1, 3)},
             inter_bool_decomposed_fa.final_states
-            == {"1:3", "1:4", "1:6", "2:3", "2:4", "2:6"},
+            == {(1, 3), (1, 4), (1, 6), (2, 3), (2, 4), (2, 6)},
             len(inter_bool_decomposed_fa.adjacency_matrices.keys()) == 2,
             inter_bool_decomposed_fa.adjacency_matrices.get(symbol1) is None,
             inter_bool_decomposed_fa.adjacency_matrices.get(symbol2) is None,
