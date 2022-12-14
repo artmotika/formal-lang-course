@@ -1,9 +1,13 @@
 from pyformlang.finite_automaton import State
 from pyformlang.finite_automaton import Symbol
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, bsr_matrix, dok_matrix
 from scipy.sparse import kron
 from pyformlang.finite_automaton import EpsilonNFA
 from numpy import array
+from project.matrix_csr_utilities import get_direct_sum
+from project.matrix_csr_utilities import get_submatrix
+from project.rsm import RSM
+from typing import Union
 
 
 class BoolDecomposedFA:
@@ -13,7 +17,7 @@ class BoolDecomposedFA:
         idx_to_state: dict[int, State],
         start_states: set[State],
         final_states: set[State],
-        adjacency_matrices: dict[Symbol, csr_matrix],
+        adjacency_matrices: dict[Symbol, Union[csr_matrix, bsr_matrix]],
     ):
         self.state_to_idx = state_to_idx
         self.idx_to_state = idx_to_state
@@ -29,7 +33,7 @@ class BoolDecomposedFA:
     @classmethod
     def from_fa(cls, fa: EpsilonNFA):
         state_to_idx, idx_to_state = {}, {}
-        for idx, state in enumerate(fa.states.copy()):
+        for idx, state in enumerate(fa.states):
             state_to_idx[state] = idx
             idx_to_state[idx] = state
 
@@ -39,6 +43,46 @@ class BoolDecomposedFA:
             start_states=fa.start_states.copy(),
             final_states=fa.final_states.copy(),
             adjacency_matrices=cls.get_adjacency_matrices(fa, state_to_idx),
+        )
+
+    @classmethod
+    def from_rsm(cls, rsm: RSM):
+        state_to_idx, idx_to_state = {}, {}
+        start_states, final_states = set(), set()
+        states, symbols = set(), set()
+        for var in rsm.modules.keys():
+            fa = rsm.modules[var]
+            for _, symbol, _ in fa:
+                symbols.add(symbol)
+            for state in fa.states:
+                new_state = State((var.value, state.value))
+                states.add(new_state)
+                if state in fa.start_states:
+                    start_states.add(new_state)
+                if state in fa.final_states:
+                    final_states.add(new_state)
+        n = len(states)
+        adjacency_matrices = {
+            symbol: dok_matrix((n, n), dtype=bool) for symbol in symbols
+        }
+        for i, s in enumerate(states):
+            state_to_idx[s] = i
+            idx_to_state[i] = s
+        for var, fa in rsm.modules.items():
+            for (source, symbol, target) in fa:
+                state1 = State((var.value, source.value))
+                state2 = State((var.value, target.value))
+                m = adjacency_matrices[symbol]
+                m[state_to_idx[state1], state_to_idx[state2]] = True
+
+        for key in adjacency_matrices.keys():
+            adjacency_matrices[key] = adjacency_matrices[key].tobsr()
+        return cls(
+            state_to_idx=state_to_idx,
+            idx_to_state=idx_to_state,
+            start_states=start_states,
+            final_states=final_states,
+            adjacency_matrices=adjacency_matrices,
         )
 
     @staticmethod
@@ -92,7 +136,7 @@ class BoolDecomposedFA:
         self.tensor_intersection_dict = {}
         for state1 in self.state_to_idx.keys():
             for state2 in other_states:
-                state = State(str(state1.value) + ":" + str(state2.value))
+                state = State((state1.value, state2.value))
                 self.tensor_intersection_dict[state] = state1
                 idx = self.state_to_idx.get(state1) * len(
                     other_states
@@ -209,48 +253,6 @@ class BoolDecomposedFA:
                     (array(row), array(col)),
                 ),
                 shape=(n_other, n_other + n_self),
-                dtype=bool,
-            )
-
-        def get_direct_sum(matrix1: csr_matrix, matrix2: csr_matrix) -> csr_matrix:
-            data, row, col = [], [], []
-            for i, j in zip(*matrix1.nonzero()):
-                data.append(True)
-                row.append(i)
-                col.append(j)
-            shape1 = matrix1.shape[0]
-            shape2 = matrix2.shape[0]
-            shape = shape1 + shape2
-            for i, j in zip(*matrix2.nonzero()):
-                data.append(True)
-                row.append(i + shape1)
-                col.append(j + shape1)
-            return csr_matrix(
-                (
-                    array(data),
-                    (array(row), array(col)),
-                ),
-                shape=(shape, shape),
-                dtype=bool,
-            )
-
-        def get_submatrix(
-            matrix: csr_matrix, range1: tuple, range2: tuple
-        ) -> csr_matrix:
-            data, row, col = [], [], []
-            shape1 = range1[1] - range1[0]
-            shape2 = range2[1] - range2[0]
-            for i, j in zip(*matrix.nonzero()):
-                if range1[0] <= i < range1[1] and range2[0] <= j < range2[1]:
-                    data.append(True)
-                    row.append(i - range1[0])
-                    col.append(j - range2[0])
-            return csr_matrix(
-                (
-                    array(data),
-                    (array(row), array(col)),
-                ),
-                shape=(shape1, shape2),
                 dtype=bool,
             )
 

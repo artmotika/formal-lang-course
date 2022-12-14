@@ -4,6 +4,8 @@ from scipy.sparse import csc_matrix
 from scipy.sparse import kron
 from pyformlang.finite_automaton import EpsilonNFA
 from numpy import array
+from project.matrix_csc_utilities import get_direct_sum
+from project.matrix_csc_utilities import get_submatrix
 
 
 class BoolDecomposedFA:
@@ -92,7 +94,7 @@ class BoolDecomposedFA:
         self.tensor_intersection_dict = {}
         for state1 in self.state_to_idx.keys():
             for state2 in other_states:
-                state = State(str(state1.value) + ":" + str(state2.value))
+                state = State(state1.value + ":" + state2.value)
                 self.tensor_intersection_dict[state] = state1
                 idx = self.state_to_idx.get(state1) * len(
                     other_states
@@ -209,48 +211,6 @@ class BoolDecomposedFA:
                     (array(row), array(col)),
                 ),
                 shape=(n_other, n_other + n_self),
-                dtype=bool,
-            )
-
-        def get_direct_sum(matrix1: csc_matrix, matrix2: csc_matrix) -> csc_matrix:
-            data, row, col = [], [], []
-            for i, j in zip(*matrix1.nonzero()):
-                data.append(True)
-                row.append(i)
-                col.append(j)
-            shape1 = matrix1.shape[0]
-            shape2 = matrix2.shape[0]
-            shape = shape1 + shape2
-            for i, j in zip(*matrix2.nonzero()):
-                data.append(True)
-                row.append(i + shape1)
-                col.append(j + shape1)
-            return csc_matrix(
-                (
-                    array(data),
-                    (array(row), array(col)),
-                ),
-                shape=(shape, shape),
-                dtype=bool,
-            )
-
-        def get_submatrix(
-            matrix: csc_matrix, range1: tuple, range2: tuple
-        ) -> csc_matrix:
-            data, row, col = [], [], []
-            shape1 = range1[1] - range1[0]
-            shape2 = range2[1] - range2[0]
-            for i, j in zip(*matrix.nonzero()):
-                if range1[0] <= i < range1[1] and range2[0] <= j < range2[1]:
-                    data.append(True)
-                    row.append(i - range1[0])
-                    col.append(j - range2[0])
-            return csc_matrix(
-                (
-                    array(data),
-                    (array(row), array(col)),
-                ),
-                shape=(shape1, shape2),
                 dtype=bool,
             )
 
