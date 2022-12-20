@@ -127,7 +127,7 @@ res = map(lambda (_, b) -> (b), reachable_pairs);
 print(res);
 
 g = set_starts({3, 5, 6}, g);
-res = map(lambda (_, b) -> (b), reachable_pairs);
+res = map(lambda (_, b) -> (b), get_reachable(g));
 print(res);
 ```
 
