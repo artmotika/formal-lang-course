@@ -143,7 +143,7 @@ print(res);
 ### Множество пар вершин удовлетворяющих КС-грамматике
 ```
 g1 = load("graph1.dot");
-cfg = c"S -> a S b | a b"
+cfg = c"S -> a S b | a b";
 
 res = map(lambda ((a, b), (_, _)) -> (a, b), get_reachable(g1 & cfg));
 print(res);
