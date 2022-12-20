@@ -18,10 +18,10 @@ val =
 expr =
     Var of var                    // переменные
   | Val of val                    // константы
-  | Set_start of set<val> * expr  // задать множество стартовых состояний
-  | Set_final of set<val> * expr  // задать множество финальных состояний
-  | Add_start of set<val> * expr  // добавить состояния в множество стартовых
-  | Add_final of set<val> * expr  // добавить состояния в множество финальных
+  | Set_start of expr * expr      // задать множество стартовых состояний
+  | Set_final of expr * expr      // задать множество финальных состояний
+  | Add_start of expr * expr      // добавить состояния в множество стартовых
+  | Add_final of expr * expr      // добавить состояния в множество финальных
   | Get_start of expr             // получить множество стартовых состояний
   | Get_final of expr             // получить множество финальных состояний
   | Get_reachable of expr         // получить все пары достижимых вершин
