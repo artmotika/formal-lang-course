@@ -108,8 +108,10 @@ lambda -> 'lambda' pattern '->' expr
 
 pattern ->
     var
-  | '(' expr ',' expr ',' expr ')'  // edge
-  | pair                            // pair
+  | edge
+  | pair
+
+edge -> '(' expr ',' expr ',' expr ')'
 
 pair ->
     '(' pair ',' pair ')'
