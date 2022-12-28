@@ -3,10 +3,8 @@ grammar GQL;
 prog: (WS* stmt SEMI WS*)+ EOF ;
 
 stmt:
-    var EQUALS expr
+    ID EQUALS expr
     | print PARL expr PARR ;
-
-var: ID ;
 
 val:
     INT
@@ -18,7 +16,7 @@ val:
 bool: 'true' | 'false' ;
 
 expr:
-    var
+    ID
   | val
   | SET_STARTS PARL expr COMMA expr PARR       // graph expr
   | SET_FINALS PARL expr COMMA expr PARR       // graph expr
@@ -44,7 +42,7 @@ expr:
 lambda: LAMBDA pattern ARROW (pattern | expr);
 
 pattern:
-    var
+    ID
     | edge
     | pair ;
 

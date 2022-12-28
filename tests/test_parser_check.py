@@ -5,19 +5,6 @@ from project.grammar_query_language.parser import check
 @pytest.mark.parametrize(
     "input, accept",
     [
-        ("_", True),
-        ("A", True),
-        ("1a", False),
-        ("!", False),
-    ],
-)
-def test_var(input, accept):
-    assert check(input, lambda p: p.var()) == accept
-
-
-@pytest.mark.parametrize(
-    "input, accept",
-    [
         ("-1", True),
         ("1", True),
         ('"string"', True),
